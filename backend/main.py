@@ -8,7 +8,7 @@ from app.models import user
 
 app = FastAPI(title="Inventory Management System")
 
-Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine) #sakht table to database
 
 @app.get("/")
 def root():
@@ -26,7 +26,7 @@ def sign_up():
 def Login():
     return {"message": "Login endpoint"}
 
-@app.get("/TDB")
+@app.get("/TDB") # function baraye test connection database
 def test_DB(db_session: Session = Depends(get_db)):
     try:
         db_session.execute(text("SELECT 1"))
