@@ -11,7 +11,7 @@ class user(BaseModel):
         from_attributes = True
         
 class user_create(BaseModel):
-    full_name: str
+    full_name: Optional[str] = None
     username: str
     email: str
     password: str

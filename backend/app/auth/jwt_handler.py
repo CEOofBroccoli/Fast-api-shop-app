@@ -3,6 +3,10 @@ from typing import Optional
 from jose import JWTError, jwt
 import os
 from dotenv import load_dotenv
+from fastapi import HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordBearer
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 load_dotenv()
 
@@ -29,3 +33,14 @@ def verify_token(token: str):
         return username
     except JWTError:
         return None
+    
+def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    username = verify_token(token)
+    if username is None:
+        raise credentials_exception
+    return username
