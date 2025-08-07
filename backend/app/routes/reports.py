@@ -8,6 +8,7 @@ from sqlalchemy import func
 from app.auth.jwt_handler import verify_token
 from fastapi import Header
 from typing import Optional
+from app.models.user import User
 
 router = APIRouter(prefix="/report", tags=["Reports"])
 
