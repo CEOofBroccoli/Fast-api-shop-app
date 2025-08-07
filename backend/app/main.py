@@ -2,19 +2,23 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import engine, Base, get_db
-from app.models import user
+from app.models import user, order # Import order model
 from app.schemas.user import user_create, user, token
 from app.auth.auth_handler import create_user, authenticate_user, get_user_by_email, get_user
 from app.auth.jwt_handler import create_access_token, verify_token, get_current_user
 from datetime import timedelta
 from typing import List
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from app.routes import orders, reports  # Import the reports router
+from app.models import user, order, product
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 app = FastAPI(title="Inventory Management System")
 Base.metadata.create_all(bind=engine) #sakht table to database
 
+app.include_router(orders.router)  # Include the orders router
+app.include_router(reports.router)  # Include the reports router
 
 @app.get("/")
 def root():
