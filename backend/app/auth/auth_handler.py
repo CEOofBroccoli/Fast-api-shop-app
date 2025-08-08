@@ -27,10 +27,12 @@ def authenticate_user(db: Session, username: str, password: str):
     return user
 
 def create_user(db: Session, user: user_create):
+    hashed_password = get_password_hash(user.password)
     db_user = User(
+        full_name=user.full_name,
         username=user.username,
         email=user.email,
-        hashed_password=get_password_hash(user.password)
+        hashed_password=hashed_password
     )
     db.add(db_user)
     db.commit()
