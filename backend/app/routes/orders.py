@@ -87,7 +87,7 @@ async def list_orders(
     return orders
 
 
-# 3.  Updateing orders
+# Updateing orders
 @router.put("/{id}", response_model=PurchaseOrder)
 async def update_order(
     id: int,

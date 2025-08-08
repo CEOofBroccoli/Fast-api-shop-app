@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Dict, List
 from app.database import get_db
 from app.models.order import PurchaseOrder
-from app.models.product import Product  # Assuming you have a Product model
+from app.models.product import Product  
 from sqlalchemy import func
 from app.auth.jwt_handler import verify_token
 from fastapi import Header
@@ -12,7 +12,7 @@ from app.models.user import User
 
 router = APIRouter(prefix="/report", tags=["Reports"])
 
-# Helper function to get user from token
+# geting user from token
 def get_user_from_token(token: str, db: Session):
     username = verify_token(token)
     if not username:
@@ -40,10 +40,9 @@ async def get_low_stock_items(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1]  # Assuming "Bearer <token>" format
-    get_user_from_token(token, db)  # Just to authenticate
+    token = authorization.split(" ")[1]  
+    get_user_from_token(token, db) 
 
-    # Assuming you have a 'min_threshold' column in your Product model
     low_stock_items = (
         db.query(Product)
         .filter(Product.quantity <= Product.min_threshold)
@@ -64,8 +63,8 @@ async def get_order_status_counts(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1]  # Assuming "Bearer <token>" format
-    get_user_from_token(token, db)  # Just to authenticate
+    token = authorization.split(" ")[1]  
+    get_user_from_token(token, db) 
 
     order_status_counts = (
         db.query(PurchaseOrder.status, func.count(PurchaseOrder.status))
@@ -87,17 +86,17 @@ async def get_total_inventory_value(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1]  # Assuming "Bearer <token>" format
-    get_user_from_token(token, db)  # Just to authenticate
+    token = authorization.split(" ")[1]  
+    get_user_from_token(token, db) 
 
-    # Assuming you have 'quantity' and 'price' columns in your Product model
+
     total_inventory_value = (
         db.query(func.sum(Product.quantity * Product.price)).scalar()
     )
     return {"total_inventory_value": total_inventory_value or 0}
 
 
-# 4. GET /report/order-history/{product_id}
+#  GET /report/order-history/{product_id}
 @router.get("/order-history/{product_id}")
 async def get_order_history_for_product(
     product_id: int,
@@ -110,8 +109,8 @@ async def get_order_history_for_product(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1]  # Assuming "Bearer <token>" format
-    get_user_from_token(token, db)  # Just to authenticate
+    token = authorization.split(" ")[1]  
+    get_user_from_token(token, db)  
 
     order_history = (
         db.query(PurchaseOrder)
