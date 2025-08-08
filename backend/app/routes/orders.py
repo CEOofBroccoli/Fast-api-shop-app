@@ -4,13 +4,14 @@ from typing import List, Optional
 from app.database import get_db
 from app.models.order import PurchaseOrder
 from app.schemas.order import PurchaseOrder, PurchaseOrderCreate, PurchaseOrderUpdate
-from app.auth.jwt_handler import verify_token  # Import verify_token
-from app.models.user import User  # Import User model
+from app.auth.jwt_handler import verify_token
+from app.models.user import User 
 from fastapi import Header
+from app.models.prodcut import Product
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
-# Helper function to get user from token
+
 def get_user_from_token(token: str, db: Session):
     username = verify_token(token)
     if not username:
@@ -26,7 +27,7 @@ def get_user_from_token(token: str, db: Session):
         )
     return user
 
-# 1. POST /orders - Create a new order
+#  create a new order
 @router.post("/", response_model=PurchaseOrder, status_code=status.HTTP_201_CREATED)
 async def create_order(
     order: PurchaseOrderCreate,
@@ -39,13 +40,18 @@ async def create_order(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1]  # Assuming "Bearer <token>" format
+    token = authorization.split(" ")[1] 
     user = get_user_from_token(token, db)
 
     if user.role != "buyer":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only buyers can create orders",
+        )
+    product = db.query(Product).filter(Product.id == order.product_id).first()
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Product not found"
         )
 
     db_order = PurchaseOrder(**order.model_dump(), ordered_by=user.id)
@@ -55,7 +61,7 @@ async def create_order(
     return db_order
 
 
-# 2. GET /orders - List all orders (with pagination and filter by status)
+# List all orders
 @router.get("/", response_model=List[PurchaseOrder])
 async def list_orders(
     page: int = 1,
@@ -70,8 +76,8 @@ async def list_orders(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1]  # Assuming "Bearer <token>" format
-    get_user_from_token(token, db)  # Just to authenticate
+    token = authorization.split(" ")[1]  
+    get_user_from_token(token, db) 
 
     query = db.query(PurchaseOrder)
     if status_filter:
@@ -81,7 +87,7 @@ async def list_orders(
     return orders
 
 
-# 3. PUT /orders/{id} - Update order
+# 3.  Updateing orders
 @router.put("/{id}", response_model=PurchaseOrder)
 async def update_order(
     id: int,
@@ -95,8 +101,8 @@ async def update_order(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1]  # Assuming "Bearer <token>" format
-    get_user_from_token(token, db)  # Just to authenticate
+    token = authorization.split(" ")[1]  
+    get_user_from_token(token, db)
 
     db_order = db.query(PurchaseOrder).filter(PurchaseOrder.id == id).first()
     if not db_order:
@@ -104,7 +110,6 @@ async def update_order(
             status_code=status.HTTP_404_NOT_FOUND, detail="Order not found"
         )
 
-    # Status flow validation
     allowed_transitions = {
         "Draft": ["Sent"],
         "Sent": ["Received"],
@@ -124,23 +129,19 @@ async def update_order(
     db.commit()
     db.refresh(db_order)
 
-    # Business logic for "Received" status
     if db_order.status == "Received":
-        # Increase stock (assuming you have an inventory table)
-        # This part needs to be adapted based on your actual inventory model
-        # Example:
-        # inventory_item = db.query(Inventory).filter(Inventory.product_id == db_order.product_id).first()
-        # if inventory_item:
-        #     inventory_item.quantity += db_order.quantity
-        #     db.add(inventory_item)
-        #     db.commit()
-        #     db.refresh(inventory_item)
-        pass  # Replace with your actual inventory update logic
+        # Increase stock
+        inventory_item = db.query(Product).filter(Product.id == db_order.product_id).first()
+        if inventory_item:
+            inventory_item.quantity += db_order.quantity
+            db.add(inventory_item)
+            db.commit()
+            db.refresh(inventory_item)
 
     return db_order
 
 
-# 4. DELETE /orders/{id} - Delete order (only allowed if status is "Draft")
+#- Delete order 
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_order(
     id: int,
@@ -153,8 +154,8 @@ async def delete_order(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1]  # Assuming "Bearer <token>" format
-    get_user_from_token(token, db)  # Just to authenticate
+    token = authorization.split(" ")[1] 
+    get_user_from_token(token, db)
 
     db_order = db.query(PurchaseOrder).filter(PurchaseOrder.id == id).first()
     if not db_order:
