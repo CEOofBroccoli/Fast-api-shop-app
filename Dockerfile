@@ -4,12 +4,16 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     gcc \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
-
 COPY ./backend/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN useradd -m appuser && chown -R appuser /app
+
 COPY ./backend /app
+
+USER appuser
 
 EXPOSE 8000
 
