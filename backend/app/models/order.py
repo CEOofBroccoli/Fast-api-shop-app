@@ -16,3 +16,5 @@ class PurchaseOrder(Base):
 
     product = relationship("Product", back_populates="orders")  # Assuming you have a Product model
     user = relationship("User", back_populates="orders")
+    
+    

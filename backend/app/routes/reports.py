@@ -9,6 +9,7 @@ from app.auth.jwt_handler import verify_token
 from fastapi import Header
 from typing import Optional
 from app.models.user import User
+import re
 
 router = APIRouter(prefix="/report", tags=["Reports"])
 
@@ -20,6 +21,18 @@ def get_user_from_token(token: str, db: Session):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid authentication credentials",
             headers={"WWW-Authenticate": "Bearer"},
+        )
+    # Input validation to prevent injection
+    if not isinstance(username, str) or len(username) > 50:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username format"
+        )
+    # Sanitize username
+    if not re.match(r'^[a-zA-Z0-9_.-]+$', username):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username format"
         )
     user = db.query(User).filter(User.username == username).first()
     if not user:
@@ -112,6 +125,13 @@ async def get_order_history_for_product(
         )
     token = authorization.split(" ")[1]  # Assuming "Bearer <token>" format
     get_user_from_token(token, db)  # Just to authenticate
+
+    # Input validation for product_id
+    if not isinstance(product_id, int) or product_id <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid product ID"
+        )
 
     order_history = (
         db.query(PurchaseOrder)
