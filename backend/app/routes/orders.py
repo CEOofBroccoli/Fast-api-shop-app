@@ -2,12 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.database import get_db
-from app.models.order import PurchaseOrder
+from app.models.order import PurchaseOrder, InvoiceStatus
 from app.schemas.order import PurchaseOrder, PurchaseOrderCreate, PurchaseOrderUpdate
 from app.auth.jwt_handler import verify_token
-from app.models.user import User 
+from app.models.user import User
 from fastapi import Header
-from app.models.prodcut import Product
+from app.models.product import Product
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -40,7 +40,7 @@ async def create_order(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1] 
+    token = authorization.split(" ")[1]
     user = get_user_from_token(token, db)
 
     if user.role != "buyer":
@@ -66,7 +66,7 @@ async def create_order(
 async def list_orders(
     page: int = 1,
     limit: int = 10,
-    status_filter: Optional[str] = None,
+    status_filter: Optional[InvoiceStatus] = None,
     db: Session = Depends(get_db),
     authorization: Optional[str] = Header(None),
 ):
@@ -76,8 +76,8 @@ async def list_orders(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1]  
-    get_user_from_token(token, db) 
+    token = authorization.split(" ")[1]
+    get_user_from_token(token, db)
 
     query = db.query(PurchaseOrder)
     if status_filter:
@@ -101,7 +101,7 @@ async def update_order(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1]  
+    token = authorization.split(" ")[1]
     get_user_from_token(token, db)
 
     db_order = db.query(PurchaseOrder).filter(PurchaseOrder.id == id).first()
@@ -111,10 +111,10 @@ async def update_order(
         )
 
     allowed_transitions = {
-        "Draft": ["Sent"],
-        "Sent": ["Received"],
-        "Received": ["Closed"],
-        "Closed": [],
+        InvoiceStatus.DRAFT: [InvoiceStatus.SENT],
+        InvoiceStatus.SENT: [InvoiceStatus.RECEIVED],
+        InvoiceStatus.RECEIVED: [InvoiceStatus.CLOSED],
+        InvoiceStatus.CLOSED: [],
     }
     if order.status not in allowed_transitions.get(db_order.status, []):
         raise HTTPException(
@@ -129,19 +129,10 @@ async def update_order(
     db.commit()
     db.refresh(db_order)
 
-    if db_order.status == "Received":
-        # Increase stock
-        inventory_item = db.query(Product).filter(Product.id == db_order.product_id).first()
-        if inventory_item:
-            inventory_item.quantity += db_order.quantity
-            db.add(inventory_item)
-            db.commit()
-            db.refresh(inventory_item)
-
     return db_order
 
 
-#- Delete order 
+#- Delete order
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_order(
     id: int,
@@ -154,7 +145,7 @@ async def delete_order(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1] 
+    token = authorization.split(" ")[1]
     get_user_from_token(token, db)
 
     db_order = db.query(PurchaseOrder).filter(PurchaseOrder.id == id).first()
@@ -163,7 +154,7 @@ async def delete_order(
             status_code=status.HTTP_404_NOT_FOUND, detail="Order not found"
         )
 
-    if db_order.status != "Draft":
+    if db_order.status != InvoiceStatus.DRAFT:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only orders with 'Draft' status can be deleted",
