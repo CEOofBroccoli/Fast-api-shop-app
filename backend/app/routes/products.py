@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional, List
+from sqlalchemy import and_
 
 from app.database import get_db
 from app.models.product import Product
@@ -63,7 +64,10 @@ async def create_product(
 async def list_products(
     db: Session = Depends(get_db),
     authorization: Optional[str] = Header(None),
-    search: Optional[str] = Query(None, description="Search by name or SKU")
+    search: Optional[str] = Query(None, description="Search by name or SKU"),
+    min_price: Optional[float] = Query(None, description="Minimum price"),
+    max_price: Optional[float] = Query(None, description="Maximum price"),
+    sort_by: Optional[str] = Query(None, description="Sort by: name_asc, name_desc, price_asc, price_desc"),
 ):
     if not authorization:
         raise HTTPException(
@@ -72,8 +76,29 @@ async def list_products(
         )
     
     query = db.query(Product)
+    
+    # Search by Name or SKU
     if search:
         query = query.filter((Product.name.contains(search)) | (Product.sku == search))
+    
+    # Filter by Price Range
+    if min_price is not None and max_price is not None:
+        query = query.filter(Product.price >= min_price, Product.price <= max_price)
+    elif min_price is not None:
+        query = query.filter(Product.price >= min_price)
+    elif max_price is not None:
+        query = query.filter(Product.price <= max_price)
+    
+    # Sort by
+    if sort_by:
+        if sort_by == "name_asc":
+            query = query.order_by(Product.name.asc())
+        elif sort_by == "name_desc":
+            query = query.order_by(Product.name.desc())
+        elif sort_by == "price_asc":
+            query = query.order_by(Product.price.asc())
+        elif sort_by == "price_desc":
+            query = query.order_by(Product.price.desc())
     
     products = query.all()
     return products
