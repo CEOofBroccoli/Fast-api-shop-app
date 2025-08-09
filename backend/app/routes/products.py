@@ -68,6 +68,9 @@ async def list_products(
     min_price: Optional[float] = Query(None, description="Minimum price"),
     max_price: Optional[float] = Query(None, description="Maximum price"),
     sort_by: Optional[str] = Query(None, description="Sort by: name_asc, name_desc, price_asc, price_desc"),
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(10, ge=1, le=100, description="Items per page"),
+    low_stock: Optional[bool] = Query(None, description="Filter by low stock items"),
 ):
     if not authorization:
         raise HTTPException(
@@ -99,8 +102,13 @@ async def list_products(
             query = query.order_by(Product.price.asc())
         elif sort_by == "price_desc":
             query = query.order_by(Product.price.desc())
+            
+    # Filter by Low Stock
+    if low_stock is True:
+        query = query.filter(Product.quantity <= Product.min_threshold)
     
-    products = query.all()
+    # Pagination
+    products = query.offset((page - 1) * limit).limit(limit).all()
     return products
 
 @router.get("/{product_id}", response_model=ProductSchema)
