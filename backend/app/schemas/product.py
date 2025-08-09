@@ -1,22 +1,14 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 class ProductBase(BaseModel):
-    name: str
-    sku: str
-    description: str
-    price: float
-    quantity: int
-    min_threshold: int
+    name: str = Field(..., description="Product name")
+    sku: str = Field(..., description="Stock Keeping Unit")
+    price: float = Field(..., gt=0, description="Product price")
+    product_group: str = Field(..., description="Product group/category")
+    min_threshold: int = Field(default=5, ge=0, description="Minimum stock threshold")
 
 class ProductCreate(ProductBase):
     pass
-
-class ProductUpdate(ProductBase):
-    name: str
-    description: str
-    price: float
-    quantity: int
-    min_threshold: int
 
 class Product(ProductBase):
     id: int
