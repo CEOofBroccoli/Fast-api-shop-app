@@ -125,6 +125,13 @@ async def update_order(
     for key, value in order.model_dump(exclude_unset=True).items():
         setattr(db_order, key, value)
 
+    # inventory update
+    if db_order.status == InvoiceStatus.RECEIVED:
+        product = db.query(Product).filter(Product.id == db_order.product_id).first()
+        if product:
+            product.quantity += db_order.quantity
+            db.add(product)
+
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
