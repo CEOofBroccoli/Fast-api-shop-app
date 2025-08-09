@@ -40,7 +40,7 @@ async def create_order(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1] 
+    token = authorization.split(" ")[1]
     user = get_user_from_token(token, db)
 
     if user.role != "buyer":
@@ -66,7 +66,7 @@ async def create_order(
 async def list_orders(
     page: int = 1,
     limit: int = 10,
-    status_filter: Optional[str] = None,
+    status_filter: Optional[InvoiceStatus] = None,
     db: Session = Depends(get_db),
     authorization: Optional[str] = Header(None),
 ):
@@ -76,8 +76,8 @@ async def list_orders(
             detail="Missing authorization header",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    token = authorization.split(" ")[1]  
-    get_user_from_token(token, db) 
+    token = authorization.split(" ")[1]
+    get_user_from_token(token, db)
 
     query = db.query(PurchaseOrder)
     if status_filter:
