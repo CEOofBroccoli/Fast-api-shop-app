@@ -1,6 +1,13 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+import enum
+
+class InvoiceStatus(str, enum.Enum):
+    DRAFT = "Draft"
+    SENT = "Sent"
+    RECEIVED = "Received"
+    CLOSED = "Closed"
 
 class PurchaseOrderBase(BaseModel):
     product_id: int
@@ -10,11 +17,11 @@ class PurchaseOrderCreate(PurchaseOrderBase):
     pass
 
 class PurchaseOrderUpdate(PurchaseOrderBase):
-    status: str
+    status: InvoiceStatus
 
 class PurchaseOrder(PurchaseOrderBase):
     id: int
-    status: str
+    status: InvoiceStatus
     created_at: datetime
     updated_at: datetime
     ordered_by: int

@@ -2,38 +2,24 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.database import engine, Base, get_db
-from app.models import user, order, product
-from app.schemas.user import user as UserSchema, user_create, token
-from app.auth.auth_handler import create_user, authenticate_user, get_user_by_email
-from app.auth.jwt_handler import create_access_token, get_current_user
+from app.models import user, order , product# Import  models
+from app.schemas.user import user_create, user, token
+from app.auth.auth_handler import create_user, authenticate_user, get_user_by_email, get_user
+from app.auth.jwt_handler import create_access_token, verify_token, get_current_user
 from datetime import timedelta
 from typing import List
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from app.routes import orders, reports
-from app.exceptions import EXCEPTION_HANDLERS, DuplicateResourceError, AuthenticationError
-import logging
+from app.routes import orders, reports, products  # Import the routers
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-app = FastAPI(
-    title="Inventory Management System",
-    description="A comprehensive inventory management system with proper error handling",
-    version="1.0.0"
-)
+app = FastAPI(title="Inventory Management System")
+Base.metadata.create_all(bind=engine) #sakht table to database
 
-for exception_class, handler in EXCEPTION_HANDLERS.items():
-    app.add_exception_handler(exception_class, handler)
-
-Base.metadata.create_all(bind=engine)
-
-app.include_router(orders.router)
-app.include_router(reports.router)
+app.include_router(orders.router)  # Include the orders router
+app.include_router(reports.router)  # Include the reports router
+app.include_router(products.router) # Include the products router
 
 @app.get("/")
 def root():
