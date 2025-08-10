@@ -1,8 +1,13 @@
 __pycache__/
 *.pyc
 .env
+*.pyc
+*.pyo
+*.pyd
 .env.local
 .env.*.local
 .git/
 .DS_Store
+.idead/
 .vscode/
+Thumbs.db
