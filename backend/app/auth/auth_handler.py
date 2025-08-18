@@ -1,9 +1,11 @@
+
+import re
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from app.models.user import User
 from app.schemas.user import user_create
 from app.auth.jwt_handler import create_access_token
-import re
+from datetime import datetime, timezone
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -39,7 +41,13 @@ def authenticate_user(db: Session, username: str, password: str):
         return False
     return user
 
-def create_user(db: Session, user: user_create):
+
+# Use a different name to avoid shadowing
+def create_user_secure(db: Session, user: user_create):
+    if not is_password_complex(user.password):
+        raise ValueError("Password must be at least 8 characters and include letters, numbers, and special characters.")
+    if get_user_by_email(db, user.email):
+        raise ValueError("Email already registered.")
     hashed_password = get_password_hash(user.password)
     db_user = User(
         full_name=user.full_name,
@@ -51,3 +59,44 @@ def create_user(db: Session, user: user_create):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+# Password complexity enforcement
+def is_password_complex(password: str) -> bool:
+    if len(password) < 8:
+        return False
+    if not re.search(r"[A-Za-z]", password):
+        return False
+    if not re.search(r"[0-9]", password):
+        return False
+    if not re.search(r"[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>/?]", password):
+        return False
+    return True
+
+# Role-based access control utility
+def require_role(user, allowed_roles):
+    if user.role not in allowed_roles:
+        raise Exception("Insufficient permissions")
+
+# Enhanced create_user with password complexity and email uniqueness
+def create_user(db: Session, user: user_create):
+    if not is_password_complex(user.password):
+        raise ValueError("Password must be at least 8 characters and include letters, numbers, and special characters.")
+    if get_user_by_email(db, user.email):
+        raise ValueError("Email already registered.")
+    hashed_password = get_password_hash(user.password)
+    db_user = User(
+        full_name=user.full_name,
+        username=user.username,
+        email=user.email,
+        hashed_password=hashed_password
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+# Update last_login on successful login
+def update_last_login(db: Session, user: User):
+    user.last_login = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(user)

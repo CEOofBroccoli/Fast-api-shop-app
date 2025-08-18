@@ -1,10 +1,36 @@
+@router.get("/{product_id}/stock-history")
+async def get_stock_history(
+    product_id: int,
+    db: Session = Depends(get_db),
+    authorization: Optional[str] = Header(None)
+):
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing authorization header"
+        )
+    token = authorization.split(" ")[1]
+    user = get_user_from_token(token, db)
+    # Only admin or manager can view stock history
+    if user.role not in ["admin", "manager"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+    logs = db.query(StockChangeLog).filter(StockChangeLog.product_id == product_id).order_by(StockChangeLog.timestamp.desc()).all()
+    return [
+        {
+            "change": log.change,
+            "reason": log.reason,
+            "changed_by": log.changed_by,
+            "timestamp": log.timestamp
+        }
+        for log in logs
+    ]
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from sqlalchemy import and_
 
 from app.database import get_db
-from app.models.product import Product
+from app.models.product import Product, StockChangeLog
 from app.schemas.product import Product as ProductSchema, ProductCreate, ProductBase
 from app.auth.jwt_handler import verify_token
 from fastapi import Header
@@ -131,6 +157,7 @@ async def get_product(
         )
     return product
 
+
 @router.put("/{product_id}", response_model=ProductSchema)
 async def update_product(
     product_id: int,
@@ -143,22 +170,72 @@ async def update_product(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing authorization header"
         )
-    
     db_product = db.query(Product).filter(Product.id == product_id).first()
     if not db_product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
-    
-    # Update product attributes
+    # Ensure SKU uniqueness on update
+    if product.sku != db_product.sku:
+        if db.query(Product).filter(Product.sku == product.sku).first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="SKU already exists"
+            )
     db_product.name = product.name
     db_product.sku = product.sku
     db_product.price = product.price
-    db_product.product_group = product.product_group
+    db_product.description = product.description
+    db_product.quantity = product.quantity
     db_product.min_threshold = product.min_threshold
-    
     db.add(db_product)
+    db.commit()
+    db.refresh(db_product)
+    return db_product
+
+# Stock adjustment endpoint
+from pydantic import BaseModel
+class StockAdjustment(BaseModel):
+    change: int
+    reason: str
+
+@router.post("/{product_id}/adjust-stock", response_model=ProductSchema)
+async def adjust_stock(
+    product_id: int,
+    adjustment: StockAdjustment,
+    db: Session = Depends(get_db),
+    authorization: Optional[str] = Header(None)
+):
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing authorization header"
+        )
+    token = authorization.split(" ")[1]
+    user = get_user_from_token(token, db)
+    db_product = db.query(Product).filter(Product.id == product_id).first()
+    if not db_product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+    new_quantity = db_product.quantity + adjustment.change
+    if new_quantity < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Stock cannot go below zero"
+        )
+    db_product.quantity = new_quantity
+    db.add(db_product)
+    # Log the stock change
+    log = StockChangeLog(
+        product_id=product_id,
+        change=adjustment.change,
+        reason=adjustment.reason,
+        changed_by=user.id
+    )
+    db.add(log)
     db.commit()
     db.refresh(db_product)
     return db_product
