@@ -9,7 +9,6 @@ from app.auth.auth_handler import get_user_by_email, require_role
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-# Helper to get current user and check role
 async def get_current_user_and_check_role(authorization: Optional[str], db: Session, allowed_roles: list):
     if not authorization:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing authorization header")

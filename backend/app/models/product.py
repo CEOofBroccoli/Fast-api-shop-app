@@ -22,7 +22,6 @@ class Product(Base):
     stock_changes = relationship("StockChangeLog", back_populates="product")
 
 
-# Stock change log for audit trail
 class StockChangeLog(Base):
     __tablename__ = "stock_change_logs"
     id = Column(Integer, primary_key=True, index=True)
