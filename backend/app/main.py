@@ -2,16 +2,16 @@ from fastapi import FastAPI, Depends, HTTPException, status
 import logging
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from app.database import engine, Base, get_db
-from app.models import user, order , product# Import  models
-from app.schemas.user import user_create, user, token
-from app.auth.auth_handler import create_user_secure, authenticate_user, get_user_by_email, get_user, update_last_login
-from app.auth.jwt_handler import create_access_token, verify_token, get_current_user
+from backend.app.database import engine, Base, get_db
+from backend.app.models import user, order , product# Import  models
+from backend.app.schemas.user import user_create, user, token
+from backend.app.auth.auth_handler import create_user_secure, authenticate_user, get_user_by_email, get_user, update_last_login
+from backend.app.auth.jwt_handler import create_access_token, verify_token, get_current_user
 from datetime import timedelta
 from typing import List
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from app.routes import orders, reports, products
-from app.routes import users
+from backend.app.routes import orders, reports, products
+from backend.app.routes import users
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -34,17 +34,34 @@ def root():
 def health_check():
     return {"status": "healthy"}
 
+
+# Rate limit and require email verification on signup
+from backend.app.routes.auth_email import check_rate_limit
+
 @app.post("/signup", response_model=user)
 def sign_up(user_data: user_create, db: Session = Depends(get_db)):
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    
+    check_rate_limit(f"signup:{user_data.email}")
     try:
-        return create_user_secure(db=db, user=user_data)
+        logger.debug(f"Creating user with email: {user_data.email}")
+        user_obj = create_user_secure(db=db, user=user_data)
+        logger.debug(f"User created successfully: {user_obj.username}")
+        return user_obj
     except ValueError as ve:
+        logger.error(f"Validation error during signup: {str(ve)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
-    except Exception:
+    except Exception as e:
+        logger.error(f"Error during signup: {str(e)}", exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Signup failed")
 
+
+# Rate limit and require email verification on login
 @app.post("/login", response_model=token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    check_rate_limit(f"login:{form_data.username}")
     user_obj = authenticate_user(db, form_data.username, form_data.password)
     if not user_obj:
         raise HTTPException(
@@ -52,6 +69,8 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    if not getattr(user_obj, "is_verified", False):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Email not verified")
     update_last_login(db, user_obj)
     access_token_expires = timedelta(minutes=30)
     access_token = create_access_token(

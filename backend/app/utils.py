@@ -1,9 +1,35 @@
+import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+def send_email(to_email: str, subject: str, body: str):
+    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", 587))
+    smtp_user = os.getenv("SMTP_USER")
+    smtp_password = os.getenv("SMTP_PASSWORD")
+    email_from = os.getenv("EMAIL_FROM", smtp_user)
+
+    # Ensure all required config is present
+    if not all([smtp_host, smtp_port, smtp_user, smtp_password, email_from]):
+        raise RuntimeError("SMTP configuration is incomplete. Please check your .env file.")
+
+    msg = MIMEMultipart()
+    msg["From"] = str(email_from)
+    msg["To"] = str(to_email)
+    msg["Subject"] = str(subject)
+    msg.attach(MIMEText(body, "plain"))
+
+    with smtplib.SMTP(smtp_host, smtp_port) as server:
+        server.starttls()
+        server.login(str(smtp_user), str(smtp_password))
+        server.sendmail(str(email_from), str(to_email), msg.as_string())
 from fastapi import HTTPException, status, Header
 from sqlalchemy.orm import Session
 from typing import Optional, Tuple
-from app.auth.jwt_handler import verify_token
-from app.models.user import User
-from app.exceptions import AuthenticationError, AuthorizationError, ValidationError, ResourceNotFoundError
+from backend.app.auth.jwt_handler import verify_token
+from backend.app.models.user import User
+from backend.app.exceptions import AuthenticationError, AuthorizationError, ValidationError, ResourceNotFoundError
 import re
 import logging
 

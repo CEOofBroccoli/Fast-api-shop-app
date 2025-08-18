@@ -1,4 +1,5 @@
 import os
+import sys
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -9,7 +10,17 @@ import logging
 logger = logging.getLogger(__name__)
 
 load_dotenv()
-DB_URL = os.getenv("DATABASE_URL", "sqlite:///./inventory_app.db") # gereftan URL database
+
+# Check if running in test mode
+TESTING = "pytest" in sys.modules
+
+# Use SQLite for testing, otherwise use the configured database
+if TESTING:
+    DB_URL = "sqlite:///./test.db"
+    logger.info("Running in test mode with SQLite database")
+else:
+    DB_URL = os.getenv("DATABASE_URL", "sqlite:///./inventory_app.db") # gereftan URL database
+
 JWT_SECRET = os.getenv("JWT_SECRET_KEY")
 
 engine = create_engine(DB_URL) #database

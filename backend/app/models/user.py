@@ -1,7 +1,7 @@
 
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
-from app.database import Base
+from backend.app.database import Base
 from sqlalchemy.sql import func
 
 
@@ -13,6 +13,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=True)
     role = Column(String, default="user")
+    is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(DateTime(timezone=True), nullable=False, onupdate=func.now(), server_default=func.now())
     last_login = Column(DateTime(timezone=True), nullable=True)

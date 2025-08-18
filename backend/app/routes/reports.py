@@ -1,14 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Dict, List
-from app.database import get_db
-from app.models.order import PurchaseOrder
-from app.models.product import Product  
+from backend.app.database import get_db
+from backend.app.models.order import PurchaseOrder
+from backend.app.models.product import Product  
 from sqlalchemy import func
-from app.auth.jwt_handler import verify_token
+from backend.app.auth.jwt_handler import verify_token
 from fastapi import Header
 from typing import Optional
-from app.models.user import User
+from backend.app.models.user import User
 import re
 
 router = APIRouter(prefix="/report", tags=["Reports"])

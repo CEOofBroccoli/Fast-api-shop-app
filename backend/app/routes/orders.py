@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from app.database import get_db
-from app.models.order import PurchaseOrder, InvoiceStatus
-from app.schemas.order import PurchaseOrder, PurchaseOrderCreate, PurchaseOrderUpdate
-from app.auth.jwt_handler import verify_token
-from app.models.user import User
+from backend.app.database import get_db
+from backend.app.models.order import PurchaseOrder, InvoiceStatus
+from backend.app.schemas.order import PurchaseOrder, PurchaseOrderCreate, PurchaseOrderUpdate
+from backend.app.auth.jwt_handler import verify_token
+from backend.app.models.user import User
 from fastapi import Header
-from app.models.product import Product
+from backend.app.models.product import Product
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 

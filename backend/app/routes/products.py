@@ -1,3 +1,35 @@
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Header
+from sqlalchemy.orm import Session
+from typing import Optional, List
+from sqlalchemy import and_
+from backend.app.database import get_db
+from backend.app.models.product import Product, StockChangeLog
+from backend.app.schemas.product import Product as ProductSchema, ProductCreate, ProductBase
+from backend.app.auth.jwt_handler import verify_token
+from backend.app.models.user import User
+from pydantic import BaseModel
+
+router = APIRouter(prefix="/products", tags=["Products"])
+
+# Helper function to get user from token
+def get_user_from_token(token: str, db: Session):
+    username = verify_token(token)
+    if not username:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication credentials"
+        )
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+    return user
+
+class StockAdjustment(BaseModel):
+    change: int
+    reason: str
+
 @router.get("/{product_id}/stock-history")
 async def get_stock_history(
     product_id: int,
@@ -24,34 +56,6 @@ async def get_stock_history(
         }
         for log in logs
     ]
-from fastapi import APIRouter, Depends, HTTPException, status, Query
-from sqlalchemy.orm import Session
-from typing import Optional, List
-from sqlalchemy import and_
-
-from app.database import get_db
-from app.models.product import Product, StockChangeLog
-from app.schemas.product import Product as ProductSchema, ProductCreate, ProductBase
-from app.auth.jwt_handler import verify_token
-from fastapi import Header
-from app.models.user import User
-
-router = APIRouter(prefix="/products", tags=["Products"])
-
-# Helper function to get user from token
-def get_user_from_token(token: str, db: Session):
-    username = verify_token(token)
-    if not username:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials"
-        )
-    user = db.query(User).filter(User.username == username).first()
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-    return user
 
 @router.post("/", response_model=ProductSchema)
 async def create_product(
@@ -64,7 +68,6 @@ async def create_product(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing authorization header"
         )
-    
     # Check if SKU already exists
     existing_product = db.query(Product).filter(Product.sku == product.sku).first()
     if existing_product:
@@ -72,7 +75,6 @@ async def create_product(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="SKU already exists"
         )
-
     db_product = Product(
         name=product.name,
         sku=product.sku,
@@ -80,7 +82,6 @@ async def create_product(
         product_group=product.product_group,
         min_threshold=product.min_threshold
     )
-    
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
@@ -103,13 +104,10 @@ async def list_products(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing authorization header"
         )
-    
     query = db.query(Product)
-    
     # Search by Name or SKU
     if search:
         query = query.filter((Product.name.contains(search)) | (Product.sku == search))
-    
     # Filter by Price Range
     if min_price is not None and max_price is not None:
         query = query.filter(Product.price >= min_price, Product.price <= max_price)
@@ -117,7 +115,6 @@ async def list_products(
         query = query.filter(Product.price >= min_price)
     elif max_price is not None:
         query = query.filter(Product.price <= max_price)
-    
     # Sort by
     if sort_by:
         if sort_by == "name_asc":
@@ -128,11 +125,9 @@ async def list_products(
             query = query.order_by(Product.price.asc())
         elif sort_by == "price_desc":
             query = query.order_by(Product.price.desc())
-            
     # Filter by Low Stock
     if low_stock is True:
         query = query.filter(Product.quantity <= Product.min_threshold)
-    
     # Pagination
     products = query.offset((page - 1) * limit).limit(limit).all()
     return products
@@ -148,7 +143,6 @@ async def get_product(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing authorization header"
         )
-    
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
         raise HTTPException(
@@ -156,7 +150,6 @@ async def get_product(
             detail="Product not found"
         )
     return product
-
 
 @router.put("/{product_id}", response_model=ProductSchema)
 async def update_product(
@@ -189,16 +182,11 @@ async def update_product(
     db_product.description = product.description
     db_product.quantity = product.quantity
     db_product.min_threshold = product.min_threshold
+    db_product.product_group = product.product_group
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
     return db_product
-
-# Stock adjustment endpoint
-from pydantic import BaseModel
-class StockAdjustment(BaseModel):
-    change: int
-    reason: str
 
 @router.post("/{product_id}/adjust-stock", response_model=ProductSchema)
 async def adjust_stock(
@@ -220,7 +208,8 @@ async def adjust_stock(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Product not found"
         )
-    new_quantity = db_product.quantity + adjustment.change
+    current_quantity = db_product.__dict__.get('quantity', 0)
+    new_quantity = int(current_quantity) + int(adjustment.change)
     if new_quantity < 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -240,39 +229,18 @@ async def adjust_stock(
     db.refresh(db_product)
     return db_product
 
-@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_product(
-    product_id: int,
-    db: Session = Depends(get_db),
-    authorization: Optional[str] = Header(None)
-):
-    if not authorization:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authorization header"
-        )
-    
-    product = db.query(Product).filter(Product.id == product_id).first()
-    if not product:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Product not found"
-        )
-    
-    db.delete(product)
-    db.commit()
-    return
+    # ...existing code...
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from sqlalchemy import and_
 
-from app.database import get_db
-from app.models.product import Product
-from app.schemas.product import Product as ProductSchema, ProductCreate, ProductBase
-from app.auth.jwt_handler import verify_token
+from backend.app.database import get_db
+from backend.app.models.product import Product
+from backend.app.schemas.product import Product as ProductSchema, ProductCreate, ProductBase
+from backend.app.auth.jwt_handler import verify_token
 from fastapi import Header
-from app.models.user import User
+from backend.app.models.user import User
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
