@@ -1,0 +1,73 @@
+version: "3.8"
+
+services:
+  # Test database
+  test-db:
+    image: postgres:13-alpine
+    container_name: test-db
+    environment:
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=testpassword
+      - POSTGRES_DB=testdb
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U testuser -d testdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - test-network
+
+  # Test Redis
+  test-redis:
+    image: redis:6-alpine
+    container_name: test-redis
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - test-network
+
+  # Test application
+  test-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: test-app
+    environment:
+      - DATABASE_URL=postgresql://testuser:testpassword@test-db:5432/testdb
+      - JWT_SECRET_KEY=test-jwt-secret-key
+      - REDIS_HOST=test-redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=
+      - DEBUG=1
+      - ENVIRONMENT=testing
+      - LOG_LEVEL=INFO
+    depends_on:
+      test-db:
+        condition: service_healthy
+      test-redis:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - ./tests:/app/tests
+    command: >
+      sh -c "
+        echo 'Waiting for services to be ready...' &&
+        sleep 5 &&
+        echo 'Running database migrations...' &&
+        python -m alembic upgrade head &&
+        echo 'Running tests...' &&
+        python -m pytest tests/ -v --cov=backend --cov-report=html --cov-report=xml
+      "
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
