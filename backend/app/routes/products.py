@@ -9,7 +9,7 @@ from backend.app.schemas.product import Product as ProductSchema, ProductCreate,
 from backend.app.auth.jwt_handler import verify_token
 from backend.app.models.user import User
 from pydantic import BaseModel
-from backend.app.utils.redis_cache import cached, cache
+from backend.app.utils.redis_cache import cached_async, cache
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
@@ -132,7 +132,7 @@ async def create_product(
     return db_product
 
 @router.get("/", response_model=List[ProductSchema])
-@cached(expire=300, prefix="products:list")  # Cache for 5 minutes
+@cached_async(expire=300, prefix="products:list")  # Cache for 5 minutes
 async def list_products(
     request: Request,
     db: Session = Depends(get_db),
@@ -204,7 +204,7 @@ async def list_products(
     return products
 
 @router.get("/{product_id}", response_model=ProductSchema)
-@cached(expire=300, prefix="products:detail")  # Cache for 5 minutes
+@cached_async(expire=300, prefix="products:detail")  # Cache for 5 minutes
 async def get_product(
     product_id: int,
     db: Session = Depends(get_db),
@@ -366,3 +366,66 @@ async def adjust_stock(
     db.refresh(db_product)
 
     return db_product
+
+
+@router.delete("/{product_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Delete a product from the inventory.
+    
+    This endpoint permanently removes a product from the system. 
+    Only managers and admins can delete products.
+    
+    Args:
+        product_id: The ID of the product to delete
+        db: Database session  
+        authorization: Bearer token for authentication
+        
+    Returns:
+        204 No Content on successful deletion
+        
+    Raises:
+        401: Unauthorized - Missing or invalid authentication
+        403: Forbidden - User lacks required permissions (admin/manager only) 
+        404: Not Found - Product does not exist
+    """
+    if not authorization:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing authorization header"
+        )
+    
+    token = authorization.split(" ")[1]
+    user = get_user_from_token(token, db)
+    
+    # Only admin or manager can delete products
+    if user.role not in ["admin", "manager"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, 
+            detail="Insufficient permissions"
+        )
+    
+    # Check if product exists
+    db_product = db.query(Product).filter(Product.id == product_id).first()
+    if not db_product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Product not found"
+        )
+    
+    # Delete related stock change logs first
+    db.query(StockChangeLog).filter(StockChangeLog.product_id == product_id).delete()
+    
+    # Delete the product
+    db.delete(db_product)
+    db.commit()
+    
+    # Clear cache for product list and specific product
+    cache.delete("products:list:*")
+    cache.delete(f"products:detail:{product_id}")
+    
+    return  # 204 No Content
