@@ -1,15 +1,34 @@
-# 🏪 FastAPI Inventory Management System
+# 🏪 N-Market - FastAPI Inventory Management System
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688.svg?style=flat&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com)
-[![Python](https://img.shields.io/badge/Python-3.8+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.13+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://python.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-336791.svg?style=flat&logo=postgresql&logoColor=white)](https://postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-7.0+-DC382D.svg?style=flat&logo=redis&logoColor=white)](https://redis.io)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg?style=flat&logo=docker&logoColor=white)](https://docker.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> **A comprehensive, enterprise-grade inventory management system built with FastAPI, featuring real-time analytics, automated workflows, and production-ready deployment.**
+> **N-Market: Your One-Stop Inventory Solution - A comprehensive, enterprise-grade inventory management system built with FastAPI, featuring professional branding, real-time analytics, and production-ready deployment.**
+
+## 🌟 **What Makes N-Market Special**
+
+- 🎨 **Professional Branding System** - Context-aware logo layouts for emails, websites, invoices, and mobile
+- 📧 **Branded Email Templates** - Professional email communications with centered logo headers
+- 🏪 **Complete Shop Management** - From suppliers to sales with full business intelligence
+- 🚀 **Production Ready** - Docker containerization with CI/CD pipelines
+- 📱 **Responsive Design** - Works seamlessly across all devices and platforms
 
 ## 🚀 Features Overview
+
+### 🎨 **Professional Branding System** ⭐️ _NEW_
+
+- **Context-Aware Logo Layouts** - Different layouts for different use cases
+  - 📧 **Email Headers**: Centered 120px square logo with professional typography
+  - 🌐 **Website Headers**: Horizontal logo + text layout with gradient backgrounds
+  - 📱 **Compact Spaces**: Small icon + "N-Market" text for mobile/sidebar navigation
+  - 🧾 **Invoice Headers**: Centered logo with company information for official documents
+- **Logo Implementation Showcase** - Visual demonstration of all branding layouts
+- **Shop Configuration Management** - Centralized branding settings
+- **Professional Email Templates** - Branded communications with company styling
 
 ### 🔐 **Authentication & Security**
 
@@ -55,8 +74,8 @@
 
 ### 📋 **Reporting & Invoicing**
 
-- **Professional PDF invoice generation**
-- **Sales receipts** with company branding
+- **Professional PDF invoice generation** with branded templates
+- **Sales receipts** with N-Market company branding
 - **Inventory reports** (low stock, valuation)
 - **Sales analytics** by period and category
 - **Supplier performance reports**
@@ -72,13 +91,14 @@
 - **Docker containerization** for easy deployment
 - **CI/CD ready** with GitHub Actions
 - **Monitoring & logging** system
+- **Professional error handling** and exception management
 
 ## 🏗️ Architecture
 
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│     Frontend    │    │   FastAPI API   │    │   PostgreSQL   │
-│   (React/Vue)   │◄──►│     Server      │◄──►│    Database     │
+│   N-Market UI   │    │   FastAPI API   │    │   PostgreSQL   │
+│ (Logo Showcase) │◄──►│     Server      │◄──►│    Database     │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                                 │
                                 ▼
@@ -90,16 +110,25 @@
 
 **Tech Stack:**
 
-- **Backend:** FastAPI 0.109.0, Python 3.8+
-- **Database:** PostgreSQL 13+ (Production) / SQLite (Testing)
+- **Backend:** FastAPI 0.109.0, Python 3.13+
+- **Database:** PostgreSQL 13+ (Production) / SQLite (Development)
 - **Cache:** Redis 7.0+
 - **ORM:** SQLAlchemy 2.0+
 - **Authentication:** JWT with python-jose
 - **PDF Generation:** ReportLab
 - **Testing:** pytest, httpx
-- **Deployment:** Docker, Docker Compose
+- **Deployment:** Docker, Docker Compose, Nginx
+- **Email:** SMTP with branded templates
 
 ## 📖 API Documentation
+
+### 🎨 **Branding & Shop Management** ⭐️ _NEW_
+
+```http
+GET    /shop/info              # Get shop information and branding
+GET    /shop/branding          # Get branding assets and layouts
+GET    /logo-showcase          # View logo implementation showcase
+```
 
 ### 🔑 **Authentication Endpoints**
 
@@ -167,28 +196,34 @@ POST   /receipts/{order_id}/generate  # Generate PDF receipt
 
 ### 📋 **Prerequisites**
 
-- Python 3.8+
+- Python 3.13+
 - PostgreSQL 13+
 - Redis 7.0+
-- Docker & Docker Compose (optional)
+- Docker & Docker Compose (recommended)
 
 ### 🐳 **Docker Deployment (Recommended)**
 
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/fastapi-inventory-system.git
-   cd fastapi-inventory-system
+
    ```
 
-2. **Configure environment**
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/yourusername/n-market-inventory-system.git
+   cd n-market-inventory-system
+   ```
+
+1. **Configure environment**
 
    ```bash
    cp .env.example .env
-   # Edit .env with your configuration
+   # Edit .env with your N-Market configuration
    ```
 
-3. **Start services**
+1. **Start services**
 
    ```bash
    # Development with PGAdmin
@@ -198,15 +233,16 @@ POST   /receipts/{order_id}/generate  # Generate PDF receipt
    docker-compose up -d
    ```
 
-4. **Run migrations**
+1. **Run migrations**
 
    ```bash
    docker-compose exec app alembic upgrade head
    ```
 
-5. **Access the application**
+1. **Access the application**
    - **API:** https://localhost/api
-   - **Docs:** https://localhost/api/docs
+   - **API Docs:** https://localhost/api/docs
+   - **Logo Showcase:** https://localhost/logo-showcase
    - **PGAdmin:** http://localhost:5050 (dev only)
 
 ### 💻 **Local Development**
@@ -227,9 +263,11 @@ POST   /receipts/{order_id}/generate  # Generate PDF receipt
 3. **Configure environment variables**
 
    ```bash
-   export DATABASE_URL="postgresql://user:pass@localhost/dbname"
+   export DATABASE_URL="postgresql://user:pass@localhost/n_market_db"
    export SECRET_KEY="your-secret-key"
    export REDIS_URL="redis://localhost:6379"
+   export SHOP_NAME="N-Market"
+   export SHOP_EMAIL="modavari005@gmail.com"
    ```
 
 4. **Run migrations**
@@ -239,9 +277,26 @@ POST   /receipts/{order_id}/generate  # Generate PDF receipt
    ```
 
 5. **Start development server**
+
    ```bash
    uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
    ```
+
+6. **View logo showcase**
+   ```bash
+   # Visit http://localhost:8000/logo-showcase to see branding implementations
+   ```
+
+## ✨ **Logo Showcase** ⭐️
+
+N-Market includes a comprehensive logo implementation showcase demonstrating professional branding across different contexts:
+
+- **📧 Email Templates** - Centered 120px logos with professional typography
+- **🌐 Website Headers** - Horizontal layouts with gradient backgrounds
+- **📱 Mobile Navigation** - Compact layouts for small screens
+- **🧾 Invoice Documents** - Professional letterhead formatting
+
+**View the showcase:** `http://localhost:8000/logo-showcase`
 
 ## 🧪 Testing
 
@@ -301,46 +356,60 @@ pre-commit run --all-files
 ### **Production Environment Variables**
 
 ```env
+# N-Market Configuration
+SHOP_NAME="N-Market"
+SHOP_DESCRIPTION="Your One-Stop Inventory Solution"
+SHOP_EMAIL="modavari005@gmail.com"
+SHOP_WEBSITE="https://n-market.ir"
+
 # Database
-DATABASE_URL=postgresql://user:password@host:5432/dbname
+DATABASE_URL=postgresql://user:password@host:5432/n_market_db
 REDIS_URL=redis://host:6379/0
 
 # Security
-SECRET_KEY=your-super-secure-secret-key-here
+JWT_SECRET_KEY=your-super-secure-secret-key-here
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 
-# Email Configuration
-EMAIL_USERNAME=your-email@company.com
-EMAIL_PASSWORD=your-app-password
-EMAIL_FROM=noreply@company.com
-EMAIL_SMTP_HOST=smtp.gmail.com
-EMAIL_SMTP_PORT=587
+# Email Configuration (for branded emails)
+SMTP_USERNAME=modavari005@gmail.com
+SMTP_PASSWORD=your-app-password
+EMAIL_FROM="N-Market <modavari005@gmail.com>"
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
 
 # Application
-APP_NAME="Inventory Management System"
 DEBUG=false
 ENVIRONMENT=production
 ```
 
 ### **Cloud Deployment Options**
 
+#### **Docker Hub (Recommended)**
+
+```bash
+# Build and push N-Market
+docker build -t n-market/inventory-api .
+docker tag n-market/inventory-api:latest n-market/inventory-api:v1.0.0
+docker push n-market/inventory-api:latest
+```
+
 #### **AWS ECS/Fargate**
 
 ```bash
 # Build and push to ECR
 aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin account.dkr.ecr.us-east-1.amazonaws.com
-docker build -t inventory-api .
-docker tag inventory-api:latest account.dkr.ecr.us-east-1.amazonaws.com/inventory-api:latest
-docker push account.dkr.ecr.us-east-1.amazonaws.com/inventory-api:latest
+docker build -t n-market-api .
+docker tag n-market-api:latest account.dkr.ecr.us-east-1.amazonaws.com/n-market-api:latest
+docker push account.dkr.ecr.us-east-1.amazonaws.com/n-market-api:latest
 ```
 
 #### **Google Cloud Run**
 
 ```bash
-# Deploy to Cloud Run
-gcloud run deploy inventory-api \
-  --image gcr.io/project-id/inventory-api \
+# Deploy N-Market to Cloud Run
+gcloud run deploy n-market-api \
+  --image gcr.io/project-id/n-market-api \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated
@@ -349,23 +418,24 @@ gcloud run deploy inventory-api \
 #### **Azure Container Apps**
 
 ```bash
-# Deploy to Azure
+# Deploy N-Market to Azure
 az containerapp create \
-  --name inventory-api \
-  --resource-group myResourceGroup \
-  --environment myEnvironment \
-  --image myregistry.azurecr.io/inventory-api:latest
+  --name n-market-api \
+  --resource-group n-market-rg \
+  --environment n-market-env \
+  --image myregistry.azurecr.io/n-market-api:latest
 ```
 
 ## 📊 Performance & Monitoring
 
 ### **Performance Features**
 
-- **Redis caching** for frequently accessed data
-- **Database indexing** for optimized queries
+- **Redis caching** for frequently accessed data and shop settings
+- **Database indexing** for optimized product and order queries
 - **Async/await** for concurrent request handling
 - **Connection pooling** for database efficiency
 - **Response compression** for faster API calls
+- **Professional branding caching** for optimized logo delivery
 
 ### **Monitoring & Observability**
 
@@ -374,6 +444,7 @@ az containerapp create \
 - **Structured logging** with correlation IDs
 - **Error tracking** and alerting
 - **Performance metrics** dashboard
+- **Logo showcase analytics** for branding insights
 
 ## 🔒 Security
 
@@ -395,22 +466,37 @@ az containerapp create \
 - API versioning strategy
 - Audit logging for sensitive operations
 
-## 📈 Roadmap
+## 📈 N-Market Roadmap
 
-### **Upcoming Features**
+### **Completed Features** ✅
 
-- [ ] **Multi-tenant support** for SaaS deployment
-- [ ] **Advanced analytics** with machine learning insights
-- [ ] **Mobile app** with React Native
-- [ ] **Barcode scanning** integration
-- [ ] **Automated reordering** based on demand forecasting
-- [ ] **Integration APIs** for accounting software
-- [ ] **Warehouse management** with location tracking
-- [ ] **Notification system** with webhooks
+- [x] **Professional Branding System** - Context-aware logo layouts
+- [x] **Comprehensive Inventory Management** - Products, suppliers, orders
+- [x] **Business Intelligence Dashboard** - Real-time analytics and insights
+- [x] **Production-Ready Deployment** - Docker, CI/CD, monitoring
+- [x] **Professional Documentation** - Complete API docs and guides
+
+### **Upcoming Features** 🚀
+
+- [ ] **Enhanced Mobile Experience** - Native mobile app with barcode scanning
+- [ ] **Advanced Analytics** - Machine learning insights and demand forecasting
+- [ ] **Multi-location Support** - Warehouse management with location tracking
+- [ ] **Integration APIs** - Connect with accounting software (QuickBooks, Xero)
+- [ ] **Automated Reordering** - Smart inventory replenishment
+- [ ] **Customer Portal** - Self-service ordering and account management
+- [ ] **Multi-tenant SaaS** - Support multiple businesses on one platform
+- [ ] **Advanced Reporting** - Custom report builder with export options
+
+### **Brand Enhancement Roadmap** 🎨
+
+- [ ] **Dynamic Theming** - Customizable color schemes and branding
+- [ ] **Logo Animation** - Animated logos for web and mobile
+- [ ] **Print Templates** - Business cards, letterheads, marketing materials
+- [ ] **Brand Guidelines** - Automated brand consistency checking
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions to N-Market! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ### **Development Process**
 
@@ -423,10 +509,11 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 ### **Contribution Areas**
 
 - 🐛 Bug fixes and improvements
-- ✨ New features and enhancements
+- ✨ New features and enhancements (especially branding and UI/UX)
 - 📚 Documentation improvements
 - 🧪 Test coverage expansion
 - 🔧 DevOps and deployment optimization
+- 🎨 Logo and branding enhancements
 
 ## 📄 License
 
@@ -437,12 +524,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **FastAPI** team for the amazing framework
 - **SQLAlchemy** team for the robust ORM
 - **Pydantic** team for data validation
+- **N-Market Community** for continuous feedback and support
 - Open source community for continuous inspiration
 
 ---
 
-**⭐ Star this repository if it helped you!**
+**⭐ Star this repository if N-Market helped you!**
 
-For questions, issues, or feature requests, please [open an issue](https://github.com/yourusername/fastapi-inventory-system/issues).
+For questions, issues, or feature requests, please [open an issue](https://github.com/yourusername/n-market-inventory-system/issues).
 
-📧 **Contact:** [your-email@company.com](mailto:your-email@company.com)
+📧 **Contact:** [modavari005@gmail.com](mailto:modavari005@gmail.com)  
+🌐 **Website:** [https://n-market.ir](https://n-market.ir)  
+📱 **Logo Showcase:** [http://localhost:8000/logo-showcase](http://localhost:8000/logo-showcase)
