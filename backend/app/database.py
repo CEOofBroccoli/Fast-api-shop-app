@@ -1,3 +1,4 @@
+# Database configuration and connection management
 import os
 import sys
 from sqlalchemy import create_engine
@@ -9,25 +10,29 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Load environment variables
 load_dotenv()
 
 # Check if running in test mode
 TESTING = "pytest" in sys.modules
 
-# Use SQLite for testing, otherwise use the configured database
+# Database URL selection - SQLite for testing, PostgreSQL for production
 if TESTING:
     DB_URL = "sqlite:///./test.db"
     logger.info("Running in test mode with SQLite database")
 else:
-    DB_URL = os.getenv("DATABASE_URL", "sqlite:///./inventory_app.db") # gereftan URL database
+    DB_URL = os.getenv("DATABASE_URL", "sqlite:///./inventory_app.db")
 
+# JWT secret key for token generation
 JWT_SECRET = os.getenv("JWT_SECRET_KEY")
 
-engine = create_engine(DB_URL) #database
-session_maker = sessionmaker(autocommit=False, autoflush=False, bind=engine) # session factory
-Base = declarative_base() #tables
+# Database engine and session configuration
+engine = create_engine(DB_URL)
+session_maker = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()  # Base class for database models
 
-def get_db():  # function baraye ijad session 
+def get_db():
+    """Database session dependency for FastAPI endpoints"""
     db_session = session_maker()
     try:
         yield db_session

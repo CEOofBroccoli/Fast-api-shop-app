@@ -1,4 +1,5 @@
 
+# Authentication handler for user management and password security
 import re
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -7,15 +8,19 @@ from backend.app.schemas.user import user_create
 from backend.app.auth.jwt_handler import create_access_token
 from datetime import datetime, timezone
 
+# Password hashing configuration using bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password, hashed_password):
+    """Verify a password against its hash"""
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password):
+    """Generate password hash using bcrypt"""
     return pwd_context.hash(password)
 
 def get_user(db: Session, username: str):
+    """Get user by username with input validation"""
     # Input validation to prevent injection
     if not username or not isinstance(username, str) or len(username) > 50:
         return None
@@ -25,6 +30,7 @@ def get_user(db: Session, username: str):
     return db.query(User).filter(User.username == username).first()
 
 def get_user_by_email(db: Session, email: str):
+    """Get user by email with validation"""
     # Input validation to prevent injection
     if not email or not isinstance(email, str) or len(email) > 100:
         return None
@@ -34,6 +40,7 @@ def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
 def authenticate_user(db: Session, username: str, password: str):
+    """Authenticate user with username and password"""
     user = get_user(db, username)
     if not user:
         return False
@@ -42,8 +49,8 @@ def authenticate_user(db: Session, username: str, password: str):
     return user
 
 
-# Use a different name to avoid shadowing
 def create_user_secure(db: Session, user: user_create):
+    """Create new user with password validation and security checks"""
     if not is_password_complex(user.password):
         raise ValueError("Password must be at least 8 characters and include letters, numbers, and special characters.")
     if get_user_by_email(db, user.email):
@@ -97,6 +104,6 @@ def create_user(db: Session, user: user_create):
 
 # Update last_login on successful login
 def update_last_login(db: Session, user: User):
-    user.last_login = datetime.now(timezone.utc)
+    db.query(User).filter(User.id == user.id).update({User.last_login: datetime.now(timezone.utc)})
     db.commit()
     db.refresh(user)
