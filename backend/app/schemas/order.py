@@ -10,18 +10,26 @@ class InvoiceStatus(str, enum.Enum):
     CLOSED = "Closed"
 
 class PurchaseOrderBase(BaseModel):
+    supplier_id: int
     product_id: int
     quantity: int
+    unit_cost: float
+    notes: Optional[str] = None
 
 class PurchaseOrderCreate(PurchaseOrderBase):
     pass
 
-class PurchaseOrderUpdate(PurchaseOrderBase):
-    status: InvoiceStatus
+class PurchaseOrderUpdate(BaseModel):
+    status: Optional[InvoiceStatus] = None
+    actual_delivery_date: Optional[datetime] = None
+    notes: Optional[str] = None
 
 class PurchaseOrder(PurchaseOrderBase):
     id: int
+    total_cost: float
     status: InvoiceStatus
+    expected_delivery_date: Optional[datetime] = None
+    actual_delivery_date: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
     ordered_by: int

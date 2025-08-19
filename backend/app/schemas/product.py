@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Optional
 
 class ProductBase(BaseModel):
     name: str
@@ -7,7 +8,7 @@ class ProductBase(BaseModel):
     price: float
     quantity: int
     min_threshold: int
-    product_group: str | None = None
+    product_group: Optional[str] = None
 
 class ProductCreate(ProductBase):
     pass

@@ -5,7 +5,7 @@ from backend.app.models.user import User
 from backend.app.auth.jwt_handler import create_access_token, verify_token
 from backend.app.auth.auth_handler import get_user_by_email, get_password_hash, update_last_login
 from backend.app.models.email_token import EmailToken
-from backend.app.utils import send_email
+from backend.app.email_utils import send_email
 from backend.app.schemas.user import user as UserSchema
 from pydantic import BaseModel
 from typing import Optional
@@ -51,7 +51,7 @@ async def reset_password(data: PasswordResetConfirm, db: Session = Depends(get_d
     user = db.query(User).filter(User.id == db_token.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    user.hashed_password = str(get_password_hash(data.new_password))
+    setattr(user, 'hashed_password', get_password_hash(data.new_password))
     db.commit()
     db.refresh(user)
     db.delete(db_token)
