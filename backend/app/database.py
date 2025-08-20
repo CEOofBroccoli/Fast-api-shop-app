@@ -22,7 +22,11 @@ if TESTING:
     DB_URL = "sqlite:///./test.db"
     logger.info("Running in test mode with SQLite database")
 else:
-    DB_URL = os.getenv("DATABASE_URL", "sqlite:///./inventory_app.db")
+    # Use data directory for SQLite in Docker, fallback to current directory
+    data_dir = "/app/data" if os.path.exists("/app/data") else "."
+    default_db_path = f"sqlite:///{data_dir}/inventory_app.db"
+    DB_URL = os.getenv("DATABASE_URL", default_db_path)
+    logger.info(f"Using database URL: {DB_URL}")
 
 # JWT secret key for token generation
 JWT_SECRET = os.getenv("JWT_SECRET_KEY")

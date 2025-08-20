@@ -1,4 +1,4 @@
-FROM python:3.9-slim AS builder
+FROM python:3.12-slim AS builder
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -41,7 +41,7 @@ RUN groupadd -g 1001 appgroup && \
     useradd -u 1001 -g appgroup -m -s /bin/bash appuser
 
 # Second stage: the actual runtime image
-FROM python:3.9-slim
+FROM python:3.12-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -64,14 +64,14 @@ RUN groupadd -g 1001 appgroup && \
     useradd -u 1001 -g appgroup -m -s /bin/bash appuser
 
 # Copy installed Python packages from builder stage
-COPY --from=builder /usr/local/lib/python3.9/site-packages /usr/local/lib/python3.9/site-packages
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application code
 COPY --chown=appuser:appgroup ./backend /app/backend
 
-# Create directory for logs
-RUN mkdir -p /app/logs && chown -R appuser:appgroup /app/logs
+# Create directory for logs and database
+RUN mkdir -p /app/logs /app/data && chown -R appuser:appgroup /app/logs /app/data
 
 # Switch to non-root user
 USER appuser
