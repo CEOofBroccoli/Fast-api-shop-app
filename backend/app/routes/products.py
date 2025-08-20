@@ -119,6 +119,7 @@ async def create_product(
         name=product.name,
         sku=product.sku,
         price=product.price,
+        quantity=product.quantity,
         product_group=product.product_group,
         min_threshold=product.min_threshold
     )

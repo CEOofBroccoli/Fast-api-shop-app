@@ -92,10 +92,11 @@ async def get_low_stock_items(
         stock_report.append({
             "id": product.id,
             "name": product.name,
+            "sku": product.sku,
             "current_quantity": product.quantity,
             "min_threshold": product.min_threshold,
             "price": float(getattr(product, 'price')),
-            "category": product.category
+            "category": product.product_group
         })
     
     return stock_report
@@ -360,7 +361,9 @@ async def get_order_status_counts(
     # Convert query results to dictionary
     result = {}
     for order_status, count in order_status_counts:
-        result[str(order_status)] = count
+        # Get the enum value (e.g., "Draft" instead of "DRAFT")
+        status_value = order_status.value if hasattr(order_status, 'value') else str(order_status)
+        result[status_value] = count
     return result
 
 
@@ -380,10 +383,28 @@ async def get_total_inventory_value(
     get_user_from_token(token, db) 
 
 
-    total_inventory_value = (
-        db.query(func.sum(Product.quantity * Product.price)).scalar()
+    # Get inventory value grouped by product_group
+    inventory_by_group = (
+        db.query(
+            Product.product_group,
+            func.sum(Product.quantity * Product.price).label('group_value')
+        )
+        .group_by(Product.product_group)
+        .all()
     )
-    return {"total_inventory_value": total_inventory_value or 0}
+    
+    # Create result dictionary with product groups as keys
+    result = {}
+    total_value = 0
+    for group, value in inventory_by_group:
+        group_value = float(value) if value else 0
+        result[group] = group_value
+        total_value += group_value
+    
+    # Also include total
+    result["total_inventory_value"] = total_value
+    
+    return result
 
 
 #  GET /report/order-history/{product_id}

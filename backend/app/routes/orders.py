@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from backend.app.database import get_db
-from backend.app.models.order import PurchaseOrder
-from backend.app.schemas.order import PurchaseOrder as PurchaseOrderSchema, PurchaseOrderCreate, PurchaseOrderUpdate, InvoiceStatus
+from backend.app.models.order import PurchaseOrder, InvoiceStatus
+from backend.app.schemas.order import PurchaseOrder as PurchaseOrderSchema, PurchaseOrderCreate, PurchaseOrderUpdate
 from backend.app.auth.jwt_handler import verify_token
 from backend.app.models.user import User
 from backend.app.models.product import Product
@@ -72,7 +72,15 @@ async def create_order(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Product not found"
         )
 
-    db_order = PurchaseOrder(**order.model_dump(), ordered_by=user.id)
+    # Calculate total cost
+    total_cost = order.quantity * order.unit_cost
+    
+    # Create order with calculated total_cost
+    order_data = order.model_dump()
+    order_data['total_cost'] = total_cost
+    order_data['ordered_by'] = user.id
+    
+    db_order = PurchaseOrder(**order_data)
     db.add(db_order)
     db.commit()
     db.refresh(db_order)
@@ -127,7 +135,7 @@ async def list_orders(
 
 @router.put("/{id}", response_model=PurchaseOrderSchema)
 async def update_order(
-    order_id: int,
+    id: int,
     order_update: PurchaseOrderUpdate,
     db: Session = Depends(get_db),
     authorization: Optional[str] = Header(None),
@@ -176,13 +184,28 @@ async def update_order(
         InvoiceStatus.CLOSED: [],
     }
     current_status = getattr(db_order, 'status', None)
-    if order_update.status and current_status is not None and order_update.status not in allowed_transitions.get(current_status, []):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid status transition from {current_status} to {order_update.status}",
-        )
+    
+    # Convert string status to enum for comparison
+    if order_update.status and current_status is not None:
+        # Convert the incoming status string to the model enum
+        try:
+            new_status_enum = InvoiceStatus(order_update.status)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid status value: {order_update.status}",
+            )
+            
+        if new_status_enum not in allowed_transitions.get(current_status, []):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid status transition from {current_status} to {order_update.status}",
+            )
 
     for key, value in order_update.model_dump(exclude_unset=True).items():
+        # Convert status string to enum if it's a status field
+        if key == 'status' and isinstance(value, str):
+            value = InvoiceStatus(value)
         setattr(db_order, key, value)
 
     # inventory update
