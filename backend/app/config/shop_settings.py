@@ -13,11 +13,11 @@ class ShopSettings:
     def __init__(self):
         # Basic Shop Information
         self.shop_name = os.getenv("SHOP_NAME", "N-Market")
-        self.shop_description = os.getenv("SHOP_DESCRIPTION", "Your One-Stop Inventory Solution")
+        self.shop_description = os.getenv("SHOP_DESCRIPTION", "Your bridge to the future")
         self.shop_email = os.getenv("SHOP_EMAIL", "modavari005@gmail.com")
-        self.shop_phone = os.getenv("SHOP_PHONE", "+1-555-0123")
-        self.shop_address = os.getenv("SHOP_ADDRESS", "123 Business Street, City, State 12345")
-        self.shop_website = os.getenv("SHOP_WEBSITE", "https://n-market.com")
+        self.shop_phone = os.getenv("SHOP_PHONE", "")
+        self.shop_address = os.getenv("SHOP_ADDRESS", "")
+        self.shop_website = os.getenv("SHOP_WEBSITE", "https://n-market.ir")
 
         # Branding - Primary logo (square) recommended for most uses
         self.company_logo_url = os.getenv("COMPANY_LOGO_URL", "/static/images/logos/n-market-logo.png")

@@ -7,7 +7,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg?style=flat&logo=docker&logoColor=white)](https://docker.com)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> **N-Market: Your One-Stop Inventory Solution - A comprehensive, enterprise-grade inventory management system built with FastAPI, featuring professional branding, real-time analytics, and production-ready deployment.**
+> **N-Market: inventory management system built with FastAPI, featuring professional branding, real-time analytics, and production-ready deployment.**
 
 ## 🌟 **What Makes N-Market Special**
 
@@ -122,7 +122,7 @@
 
 ## 📖 API Documentation
 
-### 🎨 **Branding & Shop Management** ⭐️ _NEW_
+### 🎨 **Branding & Shop Management**
 
 ```http
 GET    /shop/info              # Get shop information and branding
@@ -287,7 +287,7 @@ POST   /receipts/{order_id}/generate  # Generate PDF receipt
    # Visit http://localhost:8000/logo-showcase to see branding implementations
    ```
 
-## ✨ **Logo Showcase** ⭐️
+## ✨ **Logo Showcase**
 
 N-Market includes a comprehensive logo implementation showcase demonstrating professional branding across different contexts:
 
