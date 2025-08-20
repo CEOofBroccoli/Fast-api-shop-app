@@ -28,9 +28,7 @@ class PurchaseOrder(Base):
     actual_delivery_date = Column(DateTime(timezone=True), nullable=True)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(
-        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
-    )
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     ordered_by = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     # Relationships

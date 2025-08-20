@@ -10,12 +10,7 @@ from fastapi import HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from jose import JWTError
 from pydantic import ValidationError as PydanticValidationError
-from sqlalchemy.exc import (
-    IntegrityError,
-    OperationalError,
-    SQLAlchemyError,
-    TimeoutError,
-)
+from sqlalchemy.exc import IntegrityError, OperationalError, SQLAlchemyError, TimeoutError
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -136,9 +131,7 @@ class OrderStatusError(InventoryBusinessError):
     """Order status transition errors"""
 
     def __init__(self, current_status: str, target_status: str):
-        message = (
-            f"Invalid status transition from '{current_status}' to '{target_status}'"
-        )
+        message = f"Invalid status transition from '{current_status}' to '{target_status}'"
         super().__init__(
             message,
             "ORDER_STATUS_ERROR",
@@ -247,9 +240,7 @@ async def integrity_exception_handler(request: Request, exc: IntegrityError):
     )
 
 
-async def pydantic_validation_exception_handler(
-    request: Request, exc: PydanticValidationError
-):
+async def pydantic_validation_exception_handler(request: Request, exc: PydanticValidationError):
     """Handle Pydantic validation errors"""
     error_id = str(uuid.uuid4())
 
@@ -259,9 +250,7 @@ async def pydantic_validation_exception_handler(
             "error_id": error_id,
             "url": sanitize_log_input(str(request.url)),
             "method": sanitize_log_input(request.method),
-            "validation_errors": [
-                sanitize_log_input(str(error)) for error in exc.errors()
-            ],
+            "validation_errors": [sanitize_log_input(str(error)) for error in exc.errors()],
         },
     )
 
@@ -374,9 +363,7 @@ async def business_logic_exception_handler(request: Request, exc: BusinessLogicE
     )
 
 
-async def resource_not_found_exception_handler(
-    request: Request, exc: ResourceNotFoundError
-):
+async def resource_not_found_exception_handler(request: Request, exc: ResourceNotFoundError):
     """Handle resource not found errors"""
     error_id = str(uuid.uuid4())
 
@@ -405,9 +392,7 @@ async def resource_not_found_exception_handler(
     )
 
 
-async def duplicate_resource_exception_handler(
-    request: Request, exc: DuplicateResourceError
-):
+async def duplicate_resource_exception_handler(request: Request, exc: DuplicateResourceError):
     """Handle duplicate resource errors"""
     error_id = str(uuid.uuid4())
 
@@ -464,9 +449,7 @@ async def rate_limit_exception_handler(request: Request, exc: RateLimitError):
     )
 
 
-async def external_service_exception_handler(
-    request: Request, exc: ExternalServiceError
-):
+async def external_service_exception_handler(request: Request, exc: ExternalServiceError):
     """Handle external service errors"""
     error_id = str(uuid.uuid4())
 

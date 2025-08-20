@@ -10,11 +10,7 @@ from backend.app.models.product import Product
 from backend.app.models.sales_order import SalesOrder, SalesOrderItem, SalesOrderStatus
 from backend.app.models.user import User
 from backend.app.schemas.sales_order import SalesOrder as SalesOrderSchema
-from backend.app.schemas.sales_order import (
-    SalesOrderCreate,
-    SalesOrderUpdate,
-    SalesOrderWithItems,
-)
+from backend.app.schemas.sales_order import SalesOrderCreate, SalesOrderUpdate, SalesOrderWithItems
 
 router = APIRouter(prefix="/sales-orders", tags=["Sales Orders"])
 
@@ -29,9 +25,7 @@ def get_user_from_token(token: str, db: Session):
         )
     user = db.query(User).filter(User.username == username).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
 
 
@@ -98,9 +92,7 @@ async def create_sales_order(
     # Validate customer exists
     customer = db.query(User).filter(User.id == order.customer_id).first()
     if not customer:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Customer not found")
 
     total_amount = 0
 
@@ -147,9 +139,7 @@ async def list_sales_orders(
     db: Session = Depends(get_db),
     authorization: Optional[str] = Header(None),
     customer_id: Optional[int] = Query(None, description="Filter by customer ID"),
-    status_filter: Optional[SalesOrderStatus] = Query(
-        None, description="Filter by status"
-    ),
+    status_filter: Optional[SalesOrderStatus] = Query(None, description="Filter by status"),
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(10, ge=1, le=100, description="Items per page"),
 ):
@@ -198,18 +188,14 @@ async def get_sales_order(
 
     order = db.query(SalesOrder).filter(SalesOrder.id == order_id).first()
     if not order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Sales order not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sales order not found")
 
     # Check permissions - customers can only see their own orders
     user_role = getattr(user, "role", "")
     user_id = getattr(user, "id", 0)
     order_customer_id = getattr(order, "customer_id", 0)
     if user_role == "customer" and order_customer_id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
     return order
 
@@ -240,9 +226,7 @@ async def update_sales_order(
 
     order = db.query(SalesOrder).filter(SalesOrder.id == order_id).first()
     if not order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Sales order not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sales order not found")
 
     # Update fields
     update_data = order_update.model_dump(exclude_unset=True)
@@ -293,9 +277,7 @@ async def cancel_sales_order(
 
     order = db.query(SalesOrder).filter(SalesOrder.id == order_id).first()
     if not order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Sales order not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sales order not found")
 
     # Check if order can be cancelled
     if order.status in [SalesOrderStatus.SHIPPED, SalesOrderStatus.DELIVERED]:

@@ -58,9 +58,7 @@ def authenticate_user(db: Session, username: str, password: str):
 def create_user_secure(db: Session, user: user_create):
     """Create new user with password validation and security checks"""
     if not is_password_complex(user.password):
-        raise ValueError(
-            "Password must be at least 8 characters and include letters, numbers, and special characters."
-        )
+        raise ValueError("Password must be at least 8 characters and include letters, numbers, and special characters.")
     if get_user_by_email(db, user.email):
         raise ValueError("Email already registered.")
     hashed_password = get_password_hash(user.password)
@@ -98,9 +96,7 @@ def require_role(user, allowed_roles):
 # Enhanced create_user with password complexity and email uniqueness
 def create_user(db: Session, user: user_create):
     if not is_password_complex(user.password):
-        raise ValueError(
-            "Password must be at least 8 characters and include letters, numbers, and special characters."
-        )
+        raise ValueError("Password must be at least 8 characters and include letters, numbers, and special characters.")
     if get_user_by_email(db, user.email):
         raise ValueError("Email already registered.")
     hashed_password = get_password_hash(user.password)
@@ -118,8 +114,6 @@ def create_user(db: Session, user: user_create):
 
 # Update last_login on successful login
 def update_last_login(db: Session, user: User):
-    db.query(User).filter(User.id == user.id).update(
-        {User.last_login: datetime.now(timezone.utc)}
-    )
+    db.query(User).filter(User.id == user.id).update({User.last_login: datetime.now(timezone.utc)})
     db.commit()
     db.refresh(user)

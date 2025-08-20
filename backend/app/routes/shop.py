@@ -43,15 +43,11 @@ async def upload_logo(
     user = db.query(User).filter(User.id == user_id).first()
 
     if not user or getattr(user, "role", None) != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
     # Validate file
     if not file.filename:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="No file provided"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="No file provided")
 
     # Check file extension
     file_ext = Path(file.filename).suffix.lower()

@@ -6,10 +6,7 @@ except ImportError as e:
     cached = cache = RedisCache = None
 
 try:
-    from .security_headers import (
-        SecurityHeadersMiddleware,
-        add_security_headers_middleware,
-    )
+    from .security_headers import SecurityHeadersMiddleware, add_security_headers_middleware
 except ImportError as e:
     print(f"Error importing security_headers: {e}")
     SecurityHeadersMiddleware = add_security_headers_middleware = None
@@ -22,17 +19,10 @@ except ImportError as e:
 
 # Test logging_config import - back to normal
 try:
-    from .logging_config import (
-        JsonFormatter,
-        configure_logging_from_env,
-        get_request_logger,
-        setup_logging,
-    )
+    from .logging_config import JsonFormatter, configure_logging_from_env, get_request_logger, setup_logging
 except ImportError as e:
     print(f"Error importing logging_config: {e}")
-    setup_logging = get_request_logger = configure_logging_from_env = JsonFormatter = (
-        None
-    )
+    setup_logging = get_request_logger = configure_logging_from_env = JsonFormatter = None
 
 # Test request_logging import
 try:

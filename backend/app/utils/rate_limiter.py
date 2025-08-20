@@ -28,9 +28,7 @@ class RateLimiter:
 
     def __init__(self):
         # Structure: {client_id: {endpoint: [(timestamp, count), ...]}}
-        self.requests: Dict[str, Dict[str, list]] = defaultdict(
-            lambda: defaultdict(list)
-        )
+        self.requests: Dict[str, Dict[str, list]] = defaultdict(lambda: defaultdict(list))
         # Structure: {client_id: {endpoint: block_until_timestamp}}
         self.blocked: Dict[str, Dict[str, float]] = defaultdict(dict)
 
@@ -40,9 +38,7 @@ class RateLimiter:
         cutoff = now - window_seconds
 
         self.requests[client_id][endpoint] = [
-            (timestamp, count)
-            for timestamp, count in self.requests[client_id][endpoint]
-            if timestamp > cutoff
+            (timestamp, count) for timestamp, count in self.requests[client_id][endpoint] if timestamp > cutoff
         ]
 
     def _cleanup_expired_blocks(self):
@@ -55,9 +51,7 @@ class RateLimiter:
             if not self.blocked[client_id]:
                 del self.blocked[client_id]
 
-    def is_rate_limited(
-        self, client_id: str, endpoint: str, config: RateLimitConfig
-    ) -> bool:
+    def is_rate_limited(self, client_id: str, endpoint: str, config: RateLimitConfig) -> bool:
         """
         Check if a client is rate limited for an endpoint.
 
@@ -111,25 +105,19 @@ class RateLimiter:
         now = time.time()
         self.requests[client_id][endpoint].append((now, 1))
 
-    def get_remaining_requests(
-        self, client_id: str, endpoint: str, config: RateLimitConfig
-    ) -> int:
+    def get_remaining_requests(self, client_id: str, endpoint: str, config: RateLimitConfig) -> int:
         """Get number of remaining requests in the current window."""
         self._cleanup_old_requests(client_id, endpoint, config.window_seconds)
         recent_requests = self.requests[client_id][endpoint]
         total_requests = sum(count for _, count in recent_requests)
         return max(0, config.max_requests - total_requests)
 
-    def get_reset_time(
-        self, client_id: str, endpoint: str, config: RateLimitConfig
-    ) -> Optional[datetime]:
+    def get_reset_time(self, client_id: str, endpoint: str, config: RateLimitConfig) -> Optional[datetime]:
         """Get time when rate limit resets."""
         if not self.requests[client_id][endpoint]:
             return None
 
-        oldest_request = min(
-            timestamp for timestamp, _ in self.requests[client_id][endpoint]
-        )
+        oldest_request = min(timestamp for timestamp, _ in self.requests[client_id][endpoint])
         reset_time = oldest_request + config.window_seconds
         return datetime.fromtimestamp(reset_time)
 
@@ -139,12 +127,8 @@ limiter = RateLimiter()
 
 # Standard rate limit configurations
 RATE_LIMIT_CONFIGS = {
-    "auth": RateLimitConfig(
-        window_seconds=60, max_requests=5, block_duration_seconds=300
-    ),
-    "signup": RateLimitConfig(
-        window_seconds=3600, max_requests=3, block_duration_seconds=3600
-    ),
+    "auth": RateLimitConfig(window_seconds=60, max_requests=5, block_duration_seconds=300),
+    "signup": RateLimitConfig(window_seconds=3600, max_requests=3, block_duration_seconds=3600),
     "default": RateLimitConfig(window_seconds=60, max_requests=30),
     "api": RateLimitConfig(window_seconds=60, max_requests=120),
 }
@@ -186,9 +170,7 @@ def rate_limit(endpoint_type: str = "default"):
             endpoint = f"{request.method}:{request.url.path}"
 
             # Get rate limit config
-            config = RATE_LIMIT_CONFIGS.get(
-                endpoint_type, RATE_LIMIT_CONFIGS["default"]
-            )
+            config = RATE_LIMIT_CONFIGS.get(endpoint_type, RATE_LIMIT_CONFIGS["default"])
 
             # Check rate limit
             if limiter.is_rate_limited(client_id, endpoint, config):

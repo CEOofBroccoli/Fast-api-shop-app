@@ -13,9 +13,7 @@ from backend.app.schemas.user import user_update
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-async def get_current_user_and_check_role(
-    authorization: Optional[str], db: Session, allowed_roles: list
-):
+async def get_current_user_and_check_role(authorization: Optional[str], db: Session, allowed_roles: list):
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -24,25 +22,17 @@ async def get_current_user_and_check_role(
     token = authorization.split(" ")[1]
     username = verify_token(token)
     if not username:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     user = db.query(User).filter(User.username == username).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     if user.role not in allowed_roles:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
     return user
 
 
 @router.get("/", response_model=List[UserSchema])
-async def list_users(
-    db: Session = Depends(get_db), authorization: Optional[str] = Header(None)
-):
+async def list_users(db: Session = Depends(get_db), authorization: Optional[str] = Header(None)):
     await get_current_user_and_check_role(authorization, db, ["admin"])
     return db.query(User).all()
 
@@ -56,9 +46,7 @@ async def get_user_by_id(
     await get_current_user_and_check_role(authorization, db, ["admin"])
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
 
 
@@ -72,9 +60,7 @@ async def update_user(
     await get_current_user_and_check_role(authorization, db, ["admin"])
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     for field, value in user_data.dict(exclude_unset=True).items():
         setattr(user, field, value)
     db.commit()
@@ -91,9 +77,7 @@ async def delete_user(
     await get_current_user_and_check_role(authorization, db, ["admin"])
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     db.delete(user)
     db.commit()
     return

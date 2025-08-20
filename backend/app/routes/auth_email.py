@@ -48,9 +48,7 @@ def check_rate_limit(key: str):
 
 @router.post("/send-verification-email")
 @rate_limit(endpoint_type="auth")
-async def send_verification_email(
-    request: Request, data: EmailVerificationRequest, db: Session = Depends(get_db)
-):
+async def send_verification_email(request: Request, data: EmailVerificationRequest, db: Session = Depends(get_db)):
     # Legacy rate limit for backward compatibility
     check_rate_limit(f"verify:{data.email}")
 
@@ -61,16 +59,12 @@ async def send_verification_email(
         return {"message": "Email already verified"}
 
     # Remove any existing verification tokens for this user
-    db.query(EmailToken).filter(
-        EmailToken.user_id == user.id, EmailToken.type == "verification"
-    ).delete()
+    db.query(EmailToken).filter(EmailToken.user_id == user.id, EmailToken.type == "verification").delete()
 
     # Create secure token with sufficient entropy
     token = secrets.token_urlsafe(32)
     expires = datetime.utcnow() + timedelta(hours=1)
-    db_token = EmailToken(
-        user_id=user.id, token=token, type="verification", expires=expires
-    )
+    db_token = EmailToken(user_id=user.id, token=token, type="verification", expires=expires)
     db.add(db_token)
     db.commit()
 
@@ -85,23 +79,15 @@ async def send_verification_email(
 
 @router.post("/verify-email")
 @rate_limit(endpoint_type="auth")
-async def verify_email(
-    request: Request, data: EmailVerificationConfirm, db: Session = Depends(get_db)
-):
+async def verify_email(request: Request, data: EmailVerificationConfirm, db: Session = Depends(get_db)):
     # Validate and verify the token
-    db_token = (
-        db.query(EmailToken)
-        .filter(EmailToken.token == data.token, EmailToken.type == "verification")
-        .first()
-    )
+    db_token = db.query(EmailToken).filter(EmailToken.token == data.token, EmailToken.type == "verification").first()
     from datetime import timezone
 
     now = datetime.now(timezone.utc)
 
     if db_token is None or db_token.expires.replace(tzinfo=timezone.utc) < now:
-        logger.warning(
-            f"Invalid or expired verification token attempt: {data.token[:8]}..."
-        )
+        logger.warning(f"Invalid or expired verification token attempt: {data.token[:8]}...")
         raise HTTPException(status_code=400, detail="Invalid or expired token")
 
     user = db.query(User).filter(User.id == db_token.user_id).first()

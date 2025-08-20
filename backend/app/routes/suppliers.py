@@ -24,9 +24,7 @@ def get_user_from_token(token: str, db: Session):
         )
     user = db.query(User).filter(User.username == username).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
 
 
@@ -134,9 +132,7 @@ async def get_supplier(
 
     supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
     if not supplier:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found")
     return supplier
 
 
@@ -166,9 +162,7 @@ async def update_supplier(
 
     supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
     if not supplier:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found")
 
     # Update fields
     update_data = supplier_update.model_dump(exclude_unset=True)
@@ -209,9 +203,7 @@ async def deactivate_supplier(
 
     supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
     if not supplier:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found")
 
     setattr(supplier, "is_active", False)
     db.commit()

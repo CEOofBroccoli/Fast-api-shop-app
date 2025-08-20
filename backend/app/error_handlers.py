@@ -19,9 +19,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     error_details = []
 
     for error in exc.errors():
-        error_details.append(
-            {"loc": error["loc"], "msg": error["msg"], "type": error["type"]}
-        )
+        error_details.append({"loc": error["loc"], "msg": error["msg"], "type": error["type"]})
 
     logger.warning(f"Validation error: {error_details}")
 
@@ -52,9 +50,7 @@ async def database_exception_handler(request: Request, exc: SQLAlchemyError):
 
     logger.error(f"Database error: {str(exc)}", exc_info=True)
 
-    return JSONResponse(
-        status_code=status_code, content={"status": "error", "message": error_message}
-    )
+    return JSONResponse(status_code=status_code, content={"status": "error", "message": error_message})
 
 
 async def generic_exception_handler(request: Request, exc: Exception):

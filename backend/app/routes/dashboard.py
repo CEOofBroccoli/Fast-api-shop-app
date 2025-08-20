@@ -50,9 +50,7 @@ def get_user_from_token(token: str, db: Session):
             )
         user = db.query(User).filter(User.username == username).first()
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return user
     except Exception as e:
         logger.error(f"Error getting user from token: {str(e)}")
@@ -92,28 +90,16 @@ async def get_dashboard_stats(
         try:
             total_products = db.query(Product).count()
             total_customers = db.query(User).filter(User.role == "customer").count()
-            total_suppliers = (
-                db.query(Supplier).filter(Supplier.is_active == True).count()
-            )
+            total_suppliers = db.query(Supplier).filter(Supplier.is_active == True).count()
 
             # Low stock products count
-            low_stock_products = (
-                db.query(Product)
-                .filter(Product.quantity <= Product.min_threshold)
-                .count()
-            )
+            low_stock_products = db.query(Product).filter(Product.quantity <= Product.min_threshold).count()
 
             # Pending orders count
-            pending_sales_orders = (
-                db.query(SalesOrder)
-                .filter(SalesOrder.status == SalesOrderStatus.PENDING)
-                .count()
-            )
+            pending_sales_orders = db.query(SalesOrder).filter(SalesOrder.status == SalesOrderStatus.PENDING).count()
 
             pending_purchase_orders = (
-                db.query(PurchaseOrder)
-                .filter(PurchaseOrder.status == InvoiceStatus.DRAFT)
-                .count()
+                db.query(PurchaseOrder).filter(PurchaseOrder.status == InvoiceStatus.DRAFT).count()
             )
 
         except Exception as e:
@@ -193,12 +179,7 @@ async def get_dashboard_stats(
 
         # Get recent sales orders with safe handling
         try:
-            recent_sales_query = (
-                db.query(SalesOrder)
-                .order_by(SalesOrder.created_at.desc())
-                .limit(10)
-                .all()
-            )
+            recent_sales_query = db.query(SalesOrder).order_by(SalesOrder.created_at.desc()).limit(10).all()
 
             recent_sales_orders = []
             for order in recent_sales_query:
@@ -207,15 +188,11 @@ async def get_dashboard_stats(
                     order_id = getattr(order, "id", 0)
                     customer_id = getattr(order, "customer_id", 0)
                     total_amount_val = getattr(order, "total_amount", 0)
-                    total_amount = (
-                        float(total_amount_val) if total_amount_val is not None else 0.0
-                    )
+                    total_amount = float(total_amount_val) if total_amount_val is not None else 0.0
                     order_status = str(getattr(order, "status", ""))
                     order_date_val = getattr(order, "order_date", None)
                     order_date = (
-                        order_date_val.isoformat()
-                        if order_date_val is not None
-                        else datetime.now().isoformat()
+                        order_date_val.isoformat() if order_date_val is not None else datetime.now().isoformat()
                     )
 
                     recent_sales_orders.append(
@@ -278,33 +255,19 @@ async def get_inventory_status(
         # Check permissions
         user_role = getattr(user, "role", "")
         if user_role not in ["admin", "manager", "staff"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
-            )
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
 
         # Get inventory breakdown with error handling
         try:
             total_products = db.query(Product).count()
-            in_stock = (
-                db.query(Product)
-                .filter(Product.quantity > Product.min_threshold)
-                .count()
-            )
+            in_stock = db.query(Product).filter(Product.quantity > Product.min_threshold).count()
             low_stock = (
-                db.query(Product)
-                .filter(
-                    and_(
-                        Product.quantity <= Product.min_threshold, Product.quantity > 0
-                    )
-                )
-                .count()
+                db.query(Product).filter(and_(Product.quantity <= Product.min_threshold, Product.quantity > 0)).count()
             )
             out_of_stock = db.query(Product).filter(Product.quantity == 0).count()
 
             # Calculate total inventory value
-            inventory_value = (
-                db.query(func.sum(Product.price * Product.quantity)).scalar() or 0.0
-            )
+            inventory_value = db.query(func.sum(Product.price * Product.quantity)).scalar() or 0.0
 
         except Exception as e:
             logger.error(f"Error getting inventory status: {str(e)}")
@@ -319,12 +282,8 @@ async def get_inventory_status(
             "out_of_stock": out_of_stock,
             "inventory_value": float(inventory_value),
             "percentages": {
-                "in_stock": round(
-                    (in_stock / total_products * 100) if total_products > 0 else 0, 2
-                ),
-                "low_stock": round(
-                    (low_stock / total_products * 100) if total_products > 0 else 0, 2
-                ),
+                "in_stock": round((in_stock / total_products * 100) if total_products > 0 else 0, 2),
+                "low_stock": round((low_stock / total_products * 100) if total_products > 0 else 0, 2),
                 "out_of_stock": round(
                     (out_of_stock / total_products * 100) if total_products > 0 else 0,
                     2,
@@ -363,30 +322,20 @@ async def get_order_overview(
         # Check permissions
         user_role = getattr(user, "role", "")
         if user_role not in ["admin", "manager", "staff"]:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
-            )
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
 
         # Get order status counts with error handling
         try:
             # Sales order status counts
             sales_orders = {}
             for order_status in SalesOrderStatus:
-                count = (
-                    db.query(SalesOrder)
-                    .filter(SalesOrder.status == order_status)
-                    .count()
-                )
+                count = db.query(SalesOrder).filter(SalesOrder.status == order_status).count()
                 sales_orders[order_status.value] = count
 
             # Purchase order status counts
             purchase_orders = {}
             for order_status in InvoiceStatus:
-                count = (
-                    db.query(PurchaseOrder)
-                    .filter(PurchaseOrder.status == order_status)
-                    .count()
-                )
+                count = db.query(PurchaseOrder).filter(PurchaseOrder.status == order_status).count()
                 purchase_orders[order_status.value] = count
 
         except Exception as e:

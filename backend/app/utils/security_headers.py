@@ -45,9 +45,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
         # Only send over HTTPS in production
         if os.getenv("ENVIRONMENT") == "production":
-            response.headers["Strict-Transport-Security"] = (
-                "max-age=31536000; includeSubDomains"
-            )
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
 
         # Permissions policy (formerly Feature Policy)
         response.headers["Permissions-Policy"] = (

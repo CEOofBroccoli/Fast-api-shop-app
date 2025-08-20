@@ -24,15 +24,11 @@ def get_user_from_token(token: str, db: Session):
         )
     user = db.query(User).filter(User.username == username).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
 
 
-@router.post(
-    "/", response_model=PurchaseOrderSchema, status_code=status.HTTP_201_CREATED
-)
+@router.post("/", response_model=PurchaseOrderSchema, status_code=status.HTTP_201_CREATED)
 async def create_order(
     order: PurchaseOrderCreate,
     db: Session = Depends(get_db),
@@ -75,9 +71,7 @@ async def create_order(
         )
     product = db.query(Product).filter(Product.id == order.product_id).first()
     if not product:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Product not found"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Product not found")
 
     # Calculate total cost
     total_cost = order.quantity * order.unit_cost
@@ -181,9 +175,7 @@ async def update_order(
 
     db_order = db.query(PurchaseOrder).filter(PurchaseOrder.id == id).first()
     if not db_order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Order not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
     allowed_transitions = {
         InvoiceStatus.DRAFT: [InvoiceStatus.SENT],
@@ -218,11 +210,7 @@ async def update_order(
 
     # inventory update
     if getattr(db_order, "status", None) == InvoiceStatus.RECEIVED:
-        product = (
-            db.query(Product)
-            .filter(Product.id == getattr(db_order, "product_id", None))
-            .first()
-        )
+        product = db.query(Product).filter(Product.id == getattr(db_order, "product_id", None)).first()
         if product:
             current_quantity = getattr(product, "quantity", 0) or 0
             order_quantity = getattr(db_order, "quantity", 0) or 0
@@ -254,9 +242,7 @@ async def delete_order(
 
     db_order = db.query(PurchaseOrder).filter(PurchaseOrder.id == id).first()
     if not db_order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Order not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
     if getattr(db_order, "status", None) != InvoiceStatus.DRAFT:
         raise HTTPException(

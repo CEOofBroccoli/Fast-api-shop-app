@@ -28,19 +28,13 @@ def get_user_from_token(token: str, db: Session):
         )
     # Input validation to prevent injection
     if not isinstance(username, str) or len(username) > 50:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username format"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username format")
     # Sanitize username
     if not re.match(r"^[a-zA-Z0-9_.-]+$", username):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username format"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username format")
     user = db.query(User).filter(User.username == username).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
 
 
@@ -82,9 +76,7 @@ async def get_low_stock_items(
     token = authorization.split(" ")[1]
     get_user_from_token(token, db)
 
-    low_stock_items = (
-        db.query(Product).filter(Product.quantity <= Product.min_threshold).all()
-    )
+    low_stock_items = db.query(Product).filter(Product.quantity <= Product.min_threshold).all()
 
     stock_report = []
     for product in low_stock_items:
@@ -105,9 +97,7 @@ async def get_low_stock_items(
 
 @router.get("/best-selling-products")
 async def get_best_selling_products(
-    limit: int = Query(
-        10, ge=1, le=100, description="Number of top products to return"
-    ),
+    limit: int = Query(10, ge=1, le=100, description="Number of top products to return"),
     days: int = Query(30, ge=1, description="Number of days to look back"),
     authorization: str = Header(None),
     db: Session = Depends(get_db),
@@ -124,9 +114,7 @@ async def get_best_selling_products(
     user = db.query(User).filter(User.id == user_id).first()
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user")
 
     # Only admin, manager, and staff can view reports
     if user.role not in ["admin", "manager", "staff"]:
@@ -148,9 +136,7 @@ async def get_best_selling_products(
             Product.name,
             Product.price,
             func.sum(SalesOrderItem.quantity).label("total_sold"),
-            func.sum(SalesOrderItem.quantity * SalesOrderItem.unit_price).label(
-                "total_revenue"
-            ),
+            func.sum(SalesOrderItem.quantity * SalesOrderItem.unit_price).label("total_revenue"),
             func.count(SalesOrder.id).label("order_count"),
         )
         .join(SalesOrderItem, Product.id == SalesOrderItem.product_id)
@@ -186,9 +172,7 @@ async def get_best_selling_products(
                 "total_revenue": float(product.total_revenue),
                 "order_count": product.order_count,
                 "average_quantity_per_order": (
-                    round(product.total_sold / product.order_count, 2)
-                    if product.order_count > 0
-                    else 0
+                    round(product.total_sold / product.order_count, 2) if product.order_count > 0 else 0
                 ),
             }
         )
@@ -202,9 +186,7 @@ async def get_best_selling_products(
 
 
 @router.get("/supplier-ratings")
-async def get_supplier_ratings(
-    authorization: str = Header(None), db: Session = Depends(get_db)
-):
+async def get_supplier_ratings(authorization: str = Header(None), db: Session = Depends(get_db)):
     """Get supplier performance ratings and statistics."""
     # Verify token
     if not authorization or not authorization.startswith("Bearer "):
@@ -217,9 +199,7 @@ async def get_supplier_ratings(
     user = db.query(User).filter(User.id == user_id).first()
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user")
 
     # Only admin and manager can view supplier ratings
     if user.role not in ["admin", "manager"]:
@@ -235,10 +215,7 @@ async def get_supplier_ratings(
     for supplier in suppliers:
         # Get purchase order statistics
         total_orders = (
-            db.query(func.count(PurchaseOrder.id))
-            .filter(PurchaseOrder.supplier_id == supplier.id)
-            .scalar()
-            or 0
+            db.query(func.count(PurchaseOrder.id)).filter(PurchaseOrder.supplier_id == supplier.id).scalar() or 0
         )
 
         # Get on-time delivery count
@@ -247,8 +224,7 @@ async def get_supplier_ratings(
             .filter(
                 and_(
                     PurchaseOrder.supplier_id == supplier.id,
-                    PurchaseOrder.actual_delivery_date
-                    <= PurchaseOrder.expected_delivery_date,
+                    PurchaseOrder.actual_delivery_date <= PurchaseOrder.expected_delivery_date,
                     PurchaseOrder.actual_delivery_date.isnot(None),
                 )
             )
@@ -270,9 +246,7 @@ async def get_supplier_ratings(
         )
 
         # Calculate on-time delivery rate
-        on_time_rate = (
-            (on_time_deliveries / completed_orders * 100) if completed_orders > 0 else 0
-        )
+        on_time_rate = (on_time_deliveries / completed_orders * 100) if completed_orders > 0 else 0
 
         # Calculate average delivery delay
         avg_delay_query = (
@@ -294,16 +268,11 @@ async def get_supplier_ratings(
 
         avg_delay_days = 0
         if avg_delay_query and avg_delay_query.avg_delay_seconds:
-            avg_delay_days = round(
-                avg_delay_query.avg_delay_seconds / (24 * 60 * 60), 1
-            )
+            avg_delay_days = round(avg_delay_query.avg_delay_seconds / (24 * 60 * 60), 1)
 
         # Calculate total order value
         total_value = (
-            db.query(func.sum(PurchaseOrder.total_cost))
-            .filter(PurchaseOrder.supplier_id == supplier.id)
-            .scalar()
-            or 0
+            db.query(func.sum(PurchaseOrder.total_cost)).filter(PurchaseOrder.supplier_id == supplier.id).scalar() or 0
         )
 
         # Calculate rating (based on on-time delivery rate and other factors)
@@ -354,9 +323,7 @@ async def get_supplier_ratings(
                 if supplier_ratings
                 else 0
             ),
-            "top_performer": (
-                supplier_ratings[0]["supplier_name"] if supplier_ratings else None
-            ),
+            "top_performer": (supplier_ratings[0]["supplier_name"] if supplier_ratings else None),
             "overall_on_time_rate": round(
                 sum(s["on_time_deliveries"] for s in supplier_ratings)
                 / max(sum(s["completed_orders"] for s in supplier_ratings), 1)
@@ -407,17 +374,13 @@ async def get_order_status_counts(
     get_user_from_token(token, db)
 
     order_status_counts = (
-        db.query(PurchaseOrder.status, func.count(PurchaseOrder.status))
-        .group_by(PurchaseOrder.status)
-        .all()
+        db.query(PurchaseOrder.status, func.count(PurchaseOrder.status)).group_by(PurchaseOrder.status).all()
     )
     # Convert query results to dictionary
     result = {}
     for order_status, count in order_status_counts:
         # Get the enum value (e.g., "Draft" instead of "DRAFT")
-        status_value = (
-            order_status.value if hasattr(order_status, "value") else str(order_status)
-        )
+        status_value = order_status.value if hasattr(order_status, "value") else str(order_status)
         result[status_value] = count
     return result
 
@@ -479,14 +442,9 @@ async def get_order_history_for_product(
 
     # Input validation for product_id
     if not isinstance(product_id, int) or product_id <= 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid product ID"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid product ID")
 
     order_history = (
-        db.query(PurchaseOrder)
-        .filter(PurchaseOrder.product_id == product_id)
-        .order_by(PurchaseOrder.created_at)
-        .all()
+        db.query(PurchaseOrder).filter(PurchaseOrder.product_id == product_id).order_by(PurchaseOrder.created_at).all()
     )
     return order_history

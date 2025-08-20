@@ -13,9 +13,7 @@ def send_email(to_email: str, subject: str, body: str):
 
     # Ensure all required config is present
     if not all([smtp_host, smtp_port, smtp_user, smtp_password, email_from]):
-        raise RuntimeError(
-            "SMTP configuration is incomplete. Please check your .env file."
-        )
+        raise RuntimeError("SMTP configuration is incomplete. Please check your .env file.")
 
     msg = MIMEMultipart()
     msg["From"] = str(email_from)
@@ -37,12 +35,7 @@ from fastapi import Header, HTTPException, status
 from sqlalchemy.orm import Session
 
 from backend.app.auth.jwt_handler import verify_token
-from backend.app.exceptions import (
-    AuthenticationError,
-    AuthorizationError,
-    ResourceNotFoundError,
-    ValidationError,
-)
+from backend.app.exceptions import AuthenticationError, AuthorizationError, ResourceNotFoundError, ValidationError
 from backend.app.models.user import User
 
 logger = logging.getLogger(__name__)
@@ -68,9 +61,7 @@ def validate_token_header(authorization: Optional[str]) -> str:
         raise AuthenticationError("Invalid authorization header type")
 
     if not authorization.startswith("Bearer "):
-        raise AuthenticationError(
-            "Invalid authorization header format. Use 'Bearer <token>'"
-        )
+        raise AuthenticationError("Invalid authorization header format. Use 'Bearer <token>'")
 
     try:
         token = authorization.split(" ", 1)[1]  # More robust splitting
@@ -145,9 +136,7 @@ def validate_positive_integer(value: int, field_name: str) -> int:
         ValidationError: If validation fails
     """
     if not isinstance(value, int):
-        raise ValidationError(
-            f"{field_name} must be an integer", "INVALID_TYPE", {"field": field_name}
-        )
+        raise ValidationError(f"{field_name} must be an integer", "INVALID_TYPE", {"field": field_name})
 
     if value <= 0:
         raise ValidationError(

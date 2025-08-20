@@ -14,16 +14,12 @@ class Supplier(Base):
     email = Column(String, nullable=True)
     phone = Column(String, nullable=True)
     address = Column(Text, nullable=True)
-    delivery_lead_time_days = Column(
-        Integer, nullable=False, default=7
-    )  # Lead time in days
+    delivery_lead_time_days = Column(Integer, nullable=False, default=7)  # Lead time in days
     is_active = Column(Boolean, default=True)
     rating = Column(Float, default=0.0)  # Average rating 0-5
     total_orders = Column(Integer, default=0)
     on_time_deliveries = Column(Integer, default=0)
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     updated_at = Column(
         DateTime(timezone=True),
         nullable=False,

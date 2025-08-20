@@ -6,11 +6,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from backend.app.auth.auth_handler import (
-    get_password_hash,
-    get_user_by_email,
-    update_last_login,
-)
+from backend.app.auth.auth_handler import get_password_hash, get_user_by_email, update_last_login
 from backend.app.auth.jwt_handler import create_access_token, verify_token
 from backend.app.database import get_db
 from backend.app.email_utils import send_email
@@ -31,16 +27,12 @@ class PasswordResetConfirm(BaseModel):
 
 
 @router.post("/request-password-reset")
-async def request_password_reset(
-    data: PasswordResetRequest, db: Session = Depends(get_db)
-):
+async def request_password_reset(data: PasswordResetRequest, db: Session = Depends(get_db)):
     user = get_user_by_email(db, data.email)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     # Remove any existing reset tokens for this user
-    db.query(EmailToken).filter(
-        EmailToken.user_id == user.id, EmailToken.type == "reset"
-    ).delete()
+    db.query(EmailToken).filter(EmailToken.user_id == user.id, EmailToken.type == "reset").delete()
     token = secrets.token_urlsafe(32)
     expires = datetime.utcnow() + timedelta(hours=1)
     db_token = EmailToken(user_id=user.id, token=token, type="reset", expires=expires)
@@ -57,11 +49,7 @@ async def request_password_reset(
 async def reset_password(data: PasswordResetConfirm, db: Session = Depends(get_db)):
     from datetime import timezone
 
-    db_token = (
-        db.query(EmailToken)
-        .filter(EmailToken.token == data.token, EmailToken.type == "reset")
-        .first()
-    )
+    db_token = db.query(EmailToken).filter(EmailToken.token == data.token, EmailToken.type == "reset").first()
     now = datetime.now(timezone.utc)
     if db_token is None or db_token.expires.replace(tzinfo=timezone.utc) < now:
         raise HTTPException(status_code=400, detail="Invalid or expired token")

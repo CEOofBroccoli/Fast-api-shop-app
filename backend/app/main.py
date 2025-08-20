@@ -19,11 +19,7 @@ from backend.app.auth.auth_handler import (
     get_user_by_email,
     update_last_login,
 )
-from backend.app.auth.jwt_handler import (
-    create_access_token,
-    get_current_user,
-    verify_token,
-)
+from backend.app.auth.jwt_handler import create_access_token, get_current_user, verify_token
 from backend.app.config.shop_settings import get_shop_context, shop_settings
 
 # Database imports
@@ -31,26 +27,14 @@ from backend.app.database import Base, engine, get_db
 from backend.app.models import order, product, user
 
 # Route imports
-from backend.app.routes import (
-    dashboard,
-    invoices,
-    orders,
-    products,
-    reports,
-    sales_orders,
-    shop,
-    suppliers,
-    users,
-)
+from backend.app.routes import dashboard, invoices, orders, products, reports, sales_orders, shop, suppliers, users
 from backend.app.schemas.user import token, user, user_create
 
 # Utility imports
 from backend.app.utils.redis_cache import cache as redis_cache
 
 # Basic logging setup
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 logger = logging.getLogger(__name__)
@@ -214,11 +198,7 @@ def health_check(db_session: Session = Depends(get_db)):
     redis_status = "active" if redis_cache._client else "inactive"
 
     return {
-        "status": (
-            "healthy"
-            if db_status == "active" and redis_status == "active"
-            else "degraded"
-        ),
+        "status": ("healthy" if db_status == "active" and redis_status == "active" else "degraded"),
         "api_version": "1.0.0",
         "components": {"database": db_status, "redis_cache": redis_status},
         "timestamp": datetime.now().isoformat(),
@@ -245,15 +225,11 @@ def sign_up(user_data: user_create, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
     except Exception as e:
         logger.error(f"Error during signup: {str(e)}", exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Signup failed"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Signup failed")
 
 
 @app.post("/login", response_model=token)
-def login(
-    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
-):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """User login endpoint with rate limiting and email verification"""
     check_rate_limit(f"login:{form_data.username}")
     user_obj = authenticate_user(db, form_data.username, form_data.password)
@@ -264,14 +240,10 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not getattr(user_obj, "is_verified", False):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Email not verified"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Email not verified")
     update_last_login(db, user_obj)
     access_token_expires = timedelta(minutes=30)
-    access_token = create_access_token(
-        data={"sub": user_obj.username}, expires_delta=access_token_expires
-    )
+    access_token = create_access_token(data={"sub": user_obj.username}, expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
 
 

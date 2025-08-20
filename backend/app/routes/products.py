@@ -27,9 +27,7 @@ def get_user_from_token(token: str, db: Session):
         )
     user = db.query(User).filter(User.username == username).first()
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
 
 
@@ -72,9 +70,7 @@ async def get_stock_history(
     user = get_user_from_token(token, db)
     # Only admin or manager can view stock history
     if user.role not in ["admin", "manager"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
     logs = (
         db.query(StockChangeLog)
         .filter(StockChangeLog.product_id == product_id)
@@ -125,9 +121,7 @@ async def create_product(
     # Check if SKU already exists
     existing_product = db.query(Product).filter(Product.sku == product.sku).first()
     if existing_product:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="SKU already exists"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="SKU already exists")
     db_product = Product(
         name=product.name,
         sku=product.sku,
@@ -155,9 +149,7 @@ async def list_products(
     search: Optional[str] = Query(None, description="Search by name or SKU"),
     min_price: Optional[float] = Query(None, description="Minimum price"),
     max_price: Optional[float] = Query(None, description="Maximum price"),
-    sort_by: Optional[str] = Query(
-        None, description="Sort by: name_asc, name_desc, price_asc, price_desc"
-    ),
+    sort_by: Optional[str] = Query(None, description="Sort by: name_asc, name_desc, price_asc, price_desc"),
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(10, ge=1, le=100, description="Items per page"),
     low_stock: Optional[bool] = Query(None, description="Filter by low stock items"),
@@ -253,9 +245,7 @@ async def get_product(
         )
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     return product
 
 
@@ -293,15 +283,11 @@ async def update_product(
         )
     db_product = db.query(Product).filter(Product.id == product_id).first()
     if not db_product:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     # Ensure SKU uniqueness on update
     if product.sku != getattr(db_product, "sku", None):
         if db.query(Product).filter(Product.sku == product.sku).first():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="SKU already exists"
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="SKU already exists")
     # Update fields using setattr for proper SQLAlchemy attribute assignment
     for field, value in product.dict().items():
         if hasattr(db_product, field):
@@ -355,16 +341,12 @@ async def adjust_stock(
     user = get_user_from_token(token, db)
     db_product = db.query(Product).filter(Product.id == product_id).first()
     if not db_product:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     current_quantity = getattr(db_product, "quantity", 0) or 0
     new_quantity = int(current_quantity) + int(adjustment.change)
 
     if new_quantity < 0:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Stock cannot go below zero"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Stock cannot go below zero")
 
     setattr(db_product, "quantity", new_quantity)
     db.add(db_product)
@@ -419,16 +401,12 @@ async def delete_product(
 
     # Only admin or manager can delete products
     if user.role not in ["admin", "manager"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions"
-        )
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
 
     # Check if product exists
     db_product = db.query(Product).filter(Product.id == product_id).first()
     if not db_product:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Product not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
 
     # Delete related stock change logs first
     db.query(StockChangeLog).filter(StockChangeLog.product_id == product_id).delete()

@@ -40,22 +40,15 @@ async def generate_invoice(
     user = db.query(User).filter(User.id == user_id).first()
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user")
 
     # Get sales order with items
     sales_order = db.query(SalesOrder).filter(SalesOrder.id == sales_order_id).first()
     if not sales_order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Sales order not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sales order not found")
 
     # Check permissions - users can only access their own orders unless they're staff/admin
-    if (
-        user.role not in ["admin", "manager", "staff"]
-        and getattr(sales_order, "customer_id") != user.id
-    ):
+    if user.role not in ["admin", "manager", "staff"] and getattr(sales_order, "customer_id") != user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to access this invoice",
@@ -74,11 +67,7 @@ async def generate_invoice(
         )
 
     # Get order items
-    order_items = (
-        db.query(SalesOrderItem)
-        .filter(SalesOrderItem.sales_order_id == sales_order_id)
-        .all()
-    )
+    order_items = db.query(SalesOrderItem).filter(SalesOrderItem.sales_order_id == sales_order_id).all()
 
     if not order_items:
         raise HTTPException(
@@ -87,9 +76,7 @@ async def generate_invoice(
         )
 
     # Get customer details
-    customer = (
-        db.query(User).filter(User.id == getattr(sales_order, "customer_id")).first()
-    )
+    customer = db.query(User).filter(User.id == getattr(sales_order, "customer_id")).first()
 
     if not customer:
         raise HTTPException(
@@ -116,9 +103,7 @@ async def generate_invoice(
     story.append(Spacer(1, 12))
 
     # Invoice details
-    invoice_style = ParagraphStyle(
-        "InvoiceHeader", parent=styles["Heading2"], fontSize=16, spaceAfter=20
-    )
+    invoice_style = ParagraphStyle("InvoiceHeader", parent=styles["Heading2"], fontSize=16, spaceAfter=20)
     story.append(Paragraph(f"INVOICE #{sales_order.id:06d}", invoice_style))
     story.append(Spacer(1, 12))
 
@@ -187,9 +172,7 @@ async def generate_invoice(
         ]
     )
 
-    items_table = Table(
-        item_data, colWidths=[0.5 * inch, 3 * inch, 1 * inch, 1.5 * inch, 1.5 * inch]
-    )
+    items_table = Table(item_data, colWidths=[0.5 * inch, 3 * inch, 1 * inch, 1.5 * inch, 1.5 * inch])
     items_table.setStyle(
         TableStyle(
             [
@@ -240,9 +223,7 @@ async def generate_invoice(
     return Response(
         content=pdf_data,
         media_type="application/pdf",
-        headers={
-            "Content-Disposition": f"attachment; filename=invoice_{sales_order.id:06d}.pdf"
-        },
+        headers={"Content-Disposition": f"attachment; filename=invoice_{sales_order.id:06d}.pdf"},
     )
 
 
@@ -264,22 +245,15 @@ async def generate_receipt(
     user = db.query(User).filter(User.id == user_id).first()
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user"
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid user")
 
     # Get sales order with items
     sales_order = db.query(SalesOrder).filter(SalesOrder.id == sales_order_id).first()
     if not sales_order:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Sales order not found"
-        )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sales order not found")
 
     # Check permissions
-    if (
-        user.role not in ["admin", "manager", "staff"]
-        and getattr(sales_order, "customer_id") != user.id
-    ):
+    if user.role not in ["admin", "manager", "staff"] and getattr(sales_order, "customer_id") != user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not authorized to access this receipt",
@@ -293,16 +267,10 @@ async def generate_receipt(
         )
 
     # Get order items
-    order_items = (
-        db.query(SalesOrderItem)
-        .filter(SalesOrderItem.sales_order_id == sales_order_id)
-        .all()
-    )
+    order_items = db.query(SalesOrderItem).filter(SalesOrderItem.sales_order_id == sales_order_id).all()
 
     # Get customer details
-    customer = (
-        db.query(User).filter(User.id == getattr(sales_order, "customer_id")).first()
-    )
+    customer = db.query(User).filter(User.id == getattr(sales_order, "customer_id")).first()
 
     if not customer:
         raise HTTPException(
@@ -387,9 +355,7 @@ async def generate_receipt(
         ]
     )
 
-    items_table = Table(
-        item_data, colWidths=[3 * inch, 0.75 * inch, 1 * inch, 1 * inch]
-    )
+    items_table = Table(item_data, colWidths=[3 * inch, 0.75 * inch, 1 * inch, 1 * inch])
     items_table.setStyle(
         TableStyle(
             [
@@ -420,8 +386,7 @@ async def generate_receipt(
     story.append(Paragraph("Thank you for your purchase!", footer_style))
     story.append(
         Paragraph(
-            "Items delivered on "
-            + getattr(sales_order, "updated_at").strftime("%Y-%m-%d"),
+            "Items delivered on " + getattr(sales_order, "updated_at").strftime("%Y-%m-%d"),
             footer_style,
         )
     )
@@ -436,7 +401,5 @@ async def generate_receipt(
     return Response(
         content=pdf_data,
         media_type="application/pdf",
-        headers={
-            "Content-Disposition": f"attachment; filename=receipt_{getattr(sales_order, 'id'):06d}.pdf"
-        },
+        headers={"Content-Disposition": f"attachment; filename=receipt_{getattr(sales_order, 'id'):06d}.pdf"},
     )

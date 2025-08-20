@@ -24,9 +24,7 @@ def send_email(to_email: str, subject: str, body: str, is_html: bool = True):
         msg = MIMEMultipart()
         msg["From"] = shop_settings.email_from  # Use branded email_from
         msg["To"] = to_email
-        msg["Subject"] = (
-            f"{shop_settings.shop_name} - {subject}"  # Add shop name to subject
-        )
+        msg["Subject"] = f"{shop_settings.shop_name} - {subject}"  # Add shop name to subject
 
         # Add shop branding to email body
         branded_body = get_branded_email_template(body, subject)
@@ -204,9 +202,7 @@ def send_order_confirmation_email(user_email: str, order_id: int, order_total: f
     return send_email(user_email, subject, content)
 
 
-def send_low_stock_alert(
-    admin_email: str, product_name: str, current_stock: int, reorder_point: int
-):
+def send_low_stock_alert(admin_email: str, product_name: str, current_stock: int, reorder_point: int):
     """Send branded low stock alert to admin"""
     subject = f"Low Stock Alert - {product_name}"
 

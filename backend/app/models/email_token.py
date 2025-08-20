@@ -12,8 +12,6 @@ class EmailToken(Base):
     token = Column(String, unique=True, nullable=False, index=True)
     type = Column(String, nullable=False)  # 'verification' or 'reset'
     expires = Column(DateTime(timezone=True), nullable=False)
-    created_at = Column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     user = relationship("User")

@@ -173,25 +173,11 @@ class RedisCache:
 
             return {
                 "status": "connected",
-                "used_memory": (
-                    info.get("used_memory_human", "N/A")
-                    if isinstance(info, dict)
-                    else "N/A"
-                ),
-                "connected_clients": (
-                    info.get("connected_clients", 0) if isinstance(info, dict) else 0
-                ),
-                "total_commands_processed": (
-                    info.get("total_commands_processed", 0)
-                    if isinstance(info, dict)
-                    else 0
-                ),
-                "keyspace_hits": (
-                    info.get("keyspace_hits", 0) if isinstance(info, dict) else 0
-                ),
-                "keyspace_misses": (
-                    info.get("keyspace_misses", 0) if isinstance(info, dict) else 0
-                ),
+                "used_memory": (info.get("used_memory_human", "N/A") if isinstance(info, dict) else "N/A"),
+                "connected_clients": (info.get("connected_clients", 0) if isinstance(info, dict) else 0),
+                "total_commands_processed": (info.get("total_commands_processed", 0) if isinstance(info, dict) else 0),
+                "keyspace_hits": (info.get("keyspace_hits", 0) if isinstance(info, dict) else 0),
+                "keyspace_misses": (info.get("keyspace_misses", 0) if isinstance(info, dict) else 0),
             }
         except Exception as e:
             logger.error(f"Failed to get cache stats: {e}")
