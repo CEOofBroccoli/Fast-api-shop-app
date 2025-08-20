@@ -219,8 +219,12 @@ POST   /receipts/{order_id}/generate  # Generate PDF receipt
 1. **Configure environment**
 
    ```bash
+   # Copy example environment file
    cp .env.example .env
+
    # Edit .env with your N-Market configuration
+   # For development, the defaults in .env.example work fine
+   # Update JWT_SECRET_KEY and email settings for full functionality
    ```
 
 1. **Start services**
@@ -263,11 +267,14 @@ POST   /receipts/{order_id}/generate  # Generate PDF receipt
 3. **Configure environment variables**
 
    ```bash
-   export DATABASE_URL="postgresql://user:pass@localhost/n_market_db"
-   export SECRET_KEY="your-secret-key"
-   export REDIS_URL="redis://localhost:6379"
-   export SHOP_NAME="N-Market"
-   export SHOP_EMAIL="modavari005@gmail.com"
+   # Copy example environment file
+   cp .env.example .env
+
+   # Edit .env file with your configuration
+   # At minimum, update these values:
+   # - JWT_SECRET_KEY (generate a secure key)
+   # - SMTP_USERNAME and SMTP_PASSWORD (for email features)
+   # - SHOP_EMAIL (your business email)
    ```
 
 4. **Run migrations**
@@ -286,6 +293,37 @@ POST   /receipts/{order_id}/generate  # Generate PDF receipt
    ```bash
    # Visit http://localhost:8000/logo-showcase to see branding implementations
    ```
+
+### 🤝 **Team Development Setup**
+
+**For team members cloning the repository:**
+
+1. **Quick setup** (recommended):
+
+   ```bash
+   # Copy environment template
+   cp .env.example .env
+
+   # Run setup (installs dependencies, pre-commit, runs migrations)
+   make setup-dev
+   ```
+
+2. **Manual setup**:
+
+   ```bash
+   # 1. Copy environment template
+   cp .env.example .env
+
+   # 2. Edit .env file with your settings
+   # 3. Follow steps 1-5 above
+   ```
+
+**🔒 Important Notes:**
+
+- Never commit the `.env` file (contains secrets)
+- Always use `.env.example` as template
+- The `.env.example` has safe defaults for development
+- SQLite is used by default (no database setup required)
 
 ## ✨ **Logo Showcase**
 
@@ -479,6 +517,7 @@ az containerapp create \
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
+
 📧 **Contact:** [modavari005@gmail.com](mailto:modavari005@gmail.com)  
 🌐 **Website:** [https://n-market.ir](https://n-market.ir)  
 📱 **Logo Showcase:** [http://localhost:8000/logo-showcase](http://localhost:8000/logo-showcase)
