@@ -30,9 +30,9 @@ try:
     )
 except ImportError as e:
     print(f"Error importing logging_config: {e}")
-    setup_logging = (
-        get_request_logger
-    ) = configure_logging_from_env = JsonFormatter = None
+    setup_logging = get_request_logger = configure_logging_from_env = JsonFormatter = (
+        None
+    )
 
 # Test request_logging import
 try:

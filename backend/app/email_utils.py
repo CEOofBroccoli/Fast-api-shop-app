@@ -24,9 +24,9 @@ def send_email(to_email: str, subject: str, body: str, is_html: bool = True):
         msg = MIMEMultipart()
         msg["From"] = shop_settings.email_from  # Use branded email_from
         msg["To"] = to_email
-        msg[
-            "Subject"
-        ] = f"{shop_settings.shop_name} - {subject}"  # Add shop name to subject
+        msg["Subject"] = (
+            f"{shop_settings.shop_name} - {subject}"  # Add shop name to subject
+        )
 
         # Add shop branding to email body
         branded_body = get_branded_email_template(body, subject)
