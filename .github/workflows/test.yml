@@ -16,7 +16,7 @@ jobs:
         image: postgres:13-alpine
         env:
           POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpass
+          POSTGRES_PASSWORD: testpassword
           POSTGRES_DB: testdb
         options: >-
           --health-cmd pg_isready
@@ -52,22 +52,45 @@ jobs:
 
       - name: Set environment variables
         run: |
-          echo "DATABASE_URL=postgresql://testuser:testpass@localhost:5432/testdb" >> $GITHUB_ENV
-          echo "JWT_SECRET_KEY=test-secret-key-for-ci" >> $GITHUB_ENV
+          echo "DATABASE_URL=postgresql://testuser:testpassword@localhost:5432/testdb" >> $GITHUB_ENV
+          echo "JWT_SECRET_KEY=test-jwt-secret-key-for-ci" >> $GITHUB_ENV
           echo "REDIS_HOST=localhost" >> $GITHUB_ENV
           echo "REDIS_PORT=6379" >> $GITHUB_ENV
-          echo "ENVIRONMENT=test" >> $GITHUB_ENV
+          echo "REDIS_PASSWORD=" >> $GITHUB_ENV
+          echo "DEBUG=1" >> $GITHUB_ENV
+          echo "ENVIRONMENT=testing" >> $GITHUB_ENV
+          echo "LOG_LEVEL=INFO" >> $GITHUB_ENV
 
       - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/testdb
         run: |
           python -m alembic upgrade head
 
       - name: Run unit tests
+        env:
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/testdb
+          JWT_SECRET_KEY: test-jwt-secret-key-for-ci
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: ""
+          DEBUG: 1
+          ENVIRONMENT: testing
+          LOG_LEVEL: INFO
         run: |
           export PYTHONPATH="${{ github.workspace }}"
           pytest tests/ -v --cov=backend/app --cov-report=term-missing
 
       - name: Run integration tests
+        env:
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/testdb
+          JWT_SECRET_KEY: test-jwt-secret-key-for-ci
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: ""
+          DEBUG: 1
+          ENVIRONMENT: testing
+          LOG_LEVEL: INFO
         run: |
           export PYTHONPATH="${{ github.workspace }}"
           pytest tests/ -k "integration" -v
@@ -80,7 +103,7 @@ jobs:
         image: postgres:13-alpine
         env:
           POSTGRES_USER: testuser
-          POSTGRES_PASSWORD: testpass
+          POSTGRES_PASSWORD: testpassword
           POSTGRES_DB: testdb
         options: >-
           --health-cmd pg_isready
