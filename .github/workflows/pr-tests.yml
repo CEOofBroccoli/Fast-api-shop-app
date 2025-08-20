@@ -5,6 +5,11 @@ on:
     branches: [main, develop]
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 env:
   PYTHON_VERSION: "3.11"
 
@@ -95,18 +100,24 @@ jobs:
 
       - name: Comment PR with test results
         uses: actions/github-script@v6
-        if: always()
+        if: always() && github.event_name == 'pull_request'
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { owner, repo, number } = context.issue;
-            const conclusion = '${{ job.status }}';
-            const body = conclusion === 'success' 
-              ? '✅ All tests passed! This PR is ready for review.'
-              : '❌ Some tests failed. Please check the workflow logs for details.';
+            try {
+              const { owner, repo } = context.repo;
+              const pull_number = context.payload.pull_request.number;
+              const conclusion = '${{ job.status }}';
+              const body = conclusion === 'success' 
+                ? '✅ All tests passed! This PR is ready for review.'
+                : '❌ Some tests failed. Please check the workflow logs for details.';
 
-            github.rest.issues.createComment({
-              owner,
-              repo,
-              issue_number: number,
-              body
-            });
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pull_number,
+                body
+              });
+            } catch (error) {
+              console.log('Failed to comment on PR:', error.message);
+            }
