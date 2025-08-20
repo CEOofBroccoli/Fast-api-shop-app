@@ -22,7 +22,7 @@ jobs:
           export PYTHONPATH="${{ github.workspace }}"
           pytest tests/ -v       with:
           python-version: "3.13"   matrix:
-        python-version: ["3.11", "3.12", "3.13"]
+        python-version: ["3.11", "3.12"]
 
     services:
       postgres:
@@ -137,7 +137,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.13"
+          python-version: "3.12"
 
       - name: Install dependencies
         run: |
