@@ -25,7 +25,7 @@ def upgrade() -> None:
     
     # Create enum types
     op.execute("CREATE TYPE invoicestatus AS ENUM ('Draft', 'Sent', 'Received', 'Closed')")
-    op.execute("CREATE TYPE salesorderstatus AS ENUM ('pending', 'processing', 'shipped', 'delivered', 'cancelled')")
+    op.execute("CREATE TYPE salesorderstatus AS ENUM ('Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled')")
     
     # Create users table
     op.create_table('users',
@@ -112,7 +112,7 @@ def upgrade() -> None:
     sa.Column('quantity', sa.Integer(), nullable=False),
     sa.Column('unit_price', sa.Float(), nullable=False),
     sa.Column('total_amount', sa.Float(), nullable=False),
-    sa.Column('status', postgresql.ENUM('pending', 'processing', 'shipped', 'delivered', 'cancelled', name='salesorderstatus'), nullable=True),
+    sa.Column('status', postgresql.ENUM('Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', name='salesorderstatus'), nullable=True),
     sa.Column('order_date', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('shipped_date', sa.DateTime(timezone=True), nullable=True),
     sa.Column('delivered_date', sa.DateTime(timezone=True), nullable=True),
