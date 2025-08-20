@@ -7,8 +7,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
+    strategy:      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"   matrix:
         python-version: ["3.11", "3.12", "3.13"]
 
     services:
@@ -40,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -48,7 +50,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
-          pip install pytest pytest-asyncio pytest-cov httpx faker
+          pip install pytest pytest-asyncio pytest-cov httpx
 
       - name: Set environment variables
         run: |
@@ -122,9 +124,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
 
       - name: Install dependencies
         run: |
@@ -162,7 +164,16 @@ jobs:
           export PYTHONPATH="${{ github.workspace }}"
           cd ${{ github.workspace }}
           python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 &
-          sleep 10
+          echo $! > server.pid
+          # Wait for server to be ready
+          for i in {1..30}; do
+            if curl -f http://localhost:8000/health 2>/dev/null; then
+              echo "Server is ready!"
+              break
+            fi
+            echo "Waiting for server... ($i/30)"
+            sleep 2
+          done
 
       - name: Run API tests
         env:
@@ -177,3 +188,11 @@ jobs:
         run: |
           export PYTHONPATH="${{ github.workspace }}"
           pytest tests/ -k "api" -v
+
+      - name: Stop FastAPI server
+        if: always()
+        run: |
+          if [ -f server.pid ]; then
+            kill $(cat server.pid) || true
+            rm server.pid
+          fi

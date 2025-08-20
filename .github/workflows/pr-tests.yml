@@ -3,7 +3,7 @@ name: Pull Request Tests
 on:
   pull_request:
     branches: [main, develop]
-    types: [opened, synchronize, reopened]
+    types: [opened, synchron        uses: actions/github-script@v7ze, reopened]
 
 permissions:
   contents: read
@@ -50,7 +50,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
@@ -96,21 +96,13 @@ jobs:
         run: |
           python -m alembic upgrade head
 
-      - name: Run tests
-        env:
-          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/testdb
-          JWT_SECRET_KEY: test-jwt-secret-key-for-ci
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-          REDIS_PASSWORD: ""
-          DEBUG: 1
-          ENVIRONMENT: testing
-          LOG_LEVEL: INFO
+      - name: Run tests with coverage
         run: |
-          python -m pytest tests/ -v --cov=backend
+          cd ${{ github.workspace }}
+          python -m pytest tests/ -v --cov=backend/app
 
       - name: Comment PR with test results
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         if: always() && github.event_name == 'pull_request'
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
