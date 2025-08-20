@@ -7,17 +7,18 @@ from starlette.responses import Response
 
 logger = logging.getLogger(__name__)
 
+
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """
     Middleware that adds security headers to all responses.
-    
+
     These headers help protect against various attacks like XSS, clickjacking,
     MIME-type sniffing, and other common web vulnerabilities.
     """
-    
+
     async def dispatch(self, request: Request, call_next):
         response = await call_next(request)
-        
+
         # Content-Security-Policy to prevent XSS attacks
         response.headers["Content-Security-Policy"] = (
             "default-src 'self'; "
@@ -28,23 +29,25 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "connect-src 'self'; "
             "frame-ancestors 'none';"
         )
-        
+
         # Prevent MIME-type sniffing
         response.headers["X-Content-Type-Options"] = "nosniff"
-        
+
         # Prevent clickjacking
         response.headers["X-Frame-Options"] = "DENY"
-        
+
         # Enable XSS protection in browsers
         response.headers["X-XSS-Protection"] = "1; mode=block"
-        
+
         # Control referrer information
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        
+
         # Only send over HTTPS in production
         if os.getenv("ENVIRONMENT") == "production":
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
-        
+            response.headers[
+                "Strict-Transport-Security"
+            ] = "max-age=31536000; includeSubDomains"
+
         # Permissions policy (formerly Feature Policy)
         response.headers["Permissions-Policy"] = (
             "geolocation=(), "
@@ -56,7 +59,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             "gyroscope=(), "
             "accelerometer=()"
         )
-        
+
         return response
 
 

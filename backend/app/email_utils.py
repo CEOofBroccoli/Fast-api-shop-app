@@ -7,35 +7,38 @@ from backend.app.config.shop_settings import shop_settings
 
 logger = logging.getLogger(__name__)
 
+
 def send_email(to_email: str, subject: str, body: str, is_html: bool = True):
     """Send branded email using shop configuration"""
     smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
     smtp_port = int(os.getenv("SMTP_PORT", 587))
     smtp_user = os.getenv("SMTP_USERNAME")  # Changed from SMTP_USER
     smtp_password = os.getenv("SMTP_PASSWORD")
-    
+
     if not smtp_user or not smtp_password:
         logger.error("SMTP credentials not configured")
         return False
-    
+
     try:
         msg = MIMEMultipart()
-        msg['From'] = shop_settings.email_from  # Use branded email_from
-        msg['To'] = to_email
-        msg['Subject'] = f"{shop_settings.shop_name} - {subject}"  # Add shop name to subject
-        
+        msg["From"] = shop_settings.email_from  # Use branded email_from
+        msg["To"] = to_email
+        msg[
+            "Subject"
+        ] = f"{shop_settings.shop_name} - {subject}"  # Add shop name to subject
+
         # Add shop branding to email body
         branded_body = get_branded_email_template(body, subject)
-        
-        content_type = 'html' if is_html else 'plain'
+
+        content_type = "html" if is_html else "plain"
         msg.attach(MIMEText(branded_body, content_type))
-        
+
         server = smtplib.SMTP(smtp_host, smtp_port)
         server.starttls()
         server.login(smtp_user, smtp_password)
         server.send_message(msg)
         server.quit()
-        
+
         logger.info(f"Email sent successfully to {to_email}")
         return True
     except Exception as e:
@@ -139,7 +142,7 @@ def get_branded_email_template(content: str, subject: str) -> str:
 def send_welcome_email(user_email: str, user_name: str, verification_token: str):
     """Send branded welcome email"""
     subject = "Welcome! Please verify your email"
-    
+
     content = f"""
     <p>Hello <strong>{user_name}</strong>,</p>
     
@@ -165,14 +168,14 @@ def send_welcome_email(user_email: str, user_name: str, verification_token: str)
     <p>Best regards,<br>
     The {shop_settings.shop_name} Team</p>
     """
-    
+
     return send_email(user_email, subject, content)
 
 
 def send_order_confirmation_email(user_email: str, order_id: int, order_total: float):
     """Send branded order confirmation email"""
     subject = f"Order #{shop_settings.invoice_prefix}-{order_id:04d} Confirmed"
-    
+
     content = f"""
     <p>Hello,</p>
     
@@ -196,14 +199,16 @@ def send_order_confirmation_email(user_email: str, order_id: int, order_total: f
     <p>Best regards,<br>
     The {shop_settings.shop_name} Team</p>
     """
-    
+
     return send_email(user_email, subject, content)
 
 
-def send_low_stock_alert(admin_email: str, product_name: str, current_stock: int, reorder_point: int):
+def send_low_stock_alert(
+    admin_email: str, product_name: str, current_stock: int, reorder_point: int
+):
     """Send branded low stock alert to admin"""
     subject = f"Low Stock Alert - {product_name}"
-    
+
     content = f"""
     <p>Hello Admin,</p>
     
@@ -233,5 +238,5 @@ def send_low_stock_alert(admin_email: str, product_name: str, current_stock: int
     <p>Best regards,<br>
     {shop_settings.shop_name} Inventory System</p>
     """
-    
+
     return send_email(admin_email, subject, content)

@@ -3,7 +3,11 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from backend.app.database import get_db
 from backend.app.models.order import PurchaseOrder, InvoiceStatus
-from backend.app.schemas.order import PurchaseOrder as PurchaseOrderSchema, PurchaseOrderCreate, PurchaseOrderUpdate
+from backend.app.schemas.order import (
+    PurchaseOrder as PurchaseOrderSchema,
+    PurchaseOrderCreate,
+    PurchaseOrderUpdate,
+)
 from backend.app.auth.jwt_handler import verify_token
 from backend.app.models.user import User
 from backend.app.models.product import Product
@@ -25,7 +29,11 @@ def get_user_from_token(token: str, db: Session):
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return user
-@router.post("/", response_model=PurchaseOrderSchema, status_code=status.HTTP_201_CREATED)
+
+
+@router.post(
+    "/", response_model=PurchaseOrderSchema, status_code=status.HTTP_201_CREATED
+)
 async def create_order(
     order: PurchaseOrderCreate,
     db: Session = Depends(get_db),
@@ -33,19 +41,19 @@ async def create_order(
 ):
     """
     Create a new purchase order.
-    
+
     This endpoint allows buyers to create new purchase orders with specified
     products, quantities, and shipping details. The system automatically assigns
     the order to the authenticated user.
-    
+
     Args:
         order: Purchase order details including line items and shipping information
         db: Database session
         authorization: Bearer token for authentication
-        
+
     Returns:
         Newly created order object with assigned ID and status
-        
+
     Raises:
         401: Unauthorized - Missing or invalid authentication
         403: Forbidden - User is not a buyer
@@ -61,7 +69,7 @@ async def create_order(
     token = authorization.split(" ")[1]
     user = get_user_from_token(token, db)
 
-    if getattr(user, 'role', None) != "buyer":
+    if getattr(user, "role", None) != "buyer":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only buyers can create orders",
@@ -74,12 +82,12 @@ async def create_order(
 
     # Calculate total cost
     total_cost = order.quantity * order.unit_cost
-    
+
     # Create order with calculated total_cost
     order_data = order.model_dump()
-    order_data['total_cost'] = total_cost
-    order_data['ordered_by'] = user.id
-    
+    order_data["total_cost"] = total_cost
+    order_data["ordered_by"] = user.id
+
     db_order = PurchaseOrder(**order_data)
     db.add(db_order)
     db.commit()
@@ -97,23 +105,23 @@ async def list_orders(
 ):
     """
     List and filter purchase orders with pagination.
-    
+
     This endpoint retrieves purchase orders, with optional filtering by status
     and paginated results. Different user roles see different sets of orders:
     - Buyers: Only their own orders
     - Staff/Managers: All orders with details
     - Admin: All orders with complete history and details
-    
+
     Args:
         page: Page number for pagination (starts at 1)
         limit: Number of orders per page
         status_filter: Optional filter by order status (pending, processing, completed, etc.)
         db: Database session
         authorization: Bearer token for authentication
-        
+
     Returns:
         List of purchase order objects matching the filter criteria
-        
+
     Raises:
         401: Unauthorized - Missing or invalid authentication
     """
@@ -133,6 +141,7 @@ async def list_orders(
     orders = query.offset((page - 1) * limit).limit(limit).all()
     return orders
 
+
 @router.put("/{id}", response_model=PurchaseOrderSchema)
 async def update_order(
     id: int,
@@ -142,20 +151,20 @@ async def update_order(
 ):
     """
     Update an existing purchase order's details or status.
-    
+
     This endpoint allows updating order details and changing the order status
-    according to allowed state transitions. Status changes may trigger inventory 
+    according to allowed state transitions. Status changes may trigger inventory
     updates or notifications based on business rules.
-    
+
     Args:
         order_id: The ID of the order to update
         order_update: Schema containing fields to update (only changed fields required)
         db: Database session
         authorization: Bearer token for authentication
-        
+
     Returns:
         Updated purchase order object
-        
+
     Raises:
         401: Unauthorized - Missing or invalid authentication
         403: Forbidden - User not allowed to update this order
@@ -183,8 +192,8 @@ async def update_order(
         InvoiceStatus.RECEIVED: [InvoiceStatus.CLOSED],
         InvoiceStatus.CLOSED: [],
     }
-    current_status = getattr(db_order, 'status', None)
-    
+    current_status = getattr(db_order, "status", None)
+
     # Convert string status to enum for comparison
     if order_update.status and current_status is not None:
         # Convert the incoming status string to the model enum
@@ -195,7 +204,7 @@ async def update_order(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Invalid status value: {order_update.status}",
             )
-            
+
         if new_status_enum not in allowed_transitions.get(current_status, []):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -204,17 +213,21 @@ async def update_order(
 
     for key, value in order_update.model_dump(exclude_unset=True).items():
         # Convert status string to enum if it's a status field
-        if key == 'status' and isinstance(value, str):
+        if key == "status" and isinstance(value, str):
             value = InvoiceStatus(value)
         setattr(db_order, key, value)
 
     # inventory update
-    if getattr(db_order, 'status', None) == InvoiceStatus.RECEIVED:
-        product = db.query(Product).filter(Product.id == getattr(db_order, 'product_id', None)).first()
+    if getattr(db_order, "status", None) == InvoiceStatus.RECEIVED:
+        product = (
+            db.query(Product)
+            .filter(Product.id == getattr(db_order, "product_id", None))
+            .first()
+        )
         if product:
-            current_quantity = getattr(product, 'quantity', 0) or 0
-            order_quantity = getattr(db_order, 'quantity', 0) or 0
-            setattr(product, 'quantity', int(current_quantity) + int(order_quantity))
+            current_quantity = getattr(product, "quantity", 0) or 0
+            order_quantity = getattr(db_order, "quantity", 0) or 0
+            setattr(product, "quantity", int(current_quantity) + int(order_quantity))
             db.add(product)
 
     db.add(db_order)
@@ -224,7 +237,7 @@ async def update_order(
     return db_order
 
 
-#- Delete order
+# - Delete order
 @router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_order(
     id: int,
@@ -246,7 +259,7 @@ async def delete_order(
             status_code=status.HTTP_404_NOT_FOUND, detail="Order not found"
         )
 
-    if getattr(db_order, 'status', None) != InvoiceStatus.DRAFT:
+    if getattr(db_order, "status", None) != InvoiceStatus.DRAFT:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only orders with 'Draft' status can be deleted",

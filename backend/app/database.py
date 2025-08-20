@@ -31,6 +31,7 @@ engine = create_engine(DB_URL)
 session_maker = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()  # Base class for database models
 
+
 def get_db():
     """Database session dependency for FastAPI endpoints"""
     db_session = session_maker()

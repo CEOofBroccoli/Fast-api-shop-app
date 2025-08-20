@@ -4,10 +4,10 @@ from typing import List, Optional
 from backend.app.database import get_db
 from backend.app.models.supplier import Supplier
 from backend.app.schemas.supplier import (
-    Supplier as SupplierSchema, 
-    SupplierCreate, 
+    Supplier as SupplierSchema,
+    SupplierCreate,
     SupplierUpdate,
-    SupplierSummary
+    SupplierSummary,
 )
 from backend.app.auth.jwt_handler import verify_token
 from backend.app.models.user import User
@@ -40,18 +40,18 @@ async def create_supplier(
 ):
     """
     Create a new supplier in the system.
-    
+
     This endpoint allows authorized users (admin/manager) to register new suppliers
     with their contact information and delivery lead time.
-    
+
     Args:
         supplier: Supplier details including name, contact info, and lead time
         db: Database session
         authorization: Bearer token for authentication
-        
+
     Returns:
         Newly created supplier object with assigned ID
-        
+
     Raises:
         401: Unauthorized - Missing or invalid authentication
         403: Forbidden - User lacks required permissions
@@ -59,19 +59,19 @@ async def create_supplier(
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authorization header"
+            detail="Missing authorization header",
         )
-    
+
     token = authorization.split(" ")[1]
     user = get_user_from_token(token, db)
-    
+
     # Check if user has permission (admin or manager)
     if user.role not in ["admin", "manager"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin and manager can create suppliers"
+            detail="Only admin and manager can create suppliers",
         )
-    
+
     db_supplier = Supplier(**supplier.model_dump())
     db.add(db_supplier)
     db.commit()
@@ -90,30 +90,30 @@ async def list_suppliers(
 ):
     """
     List all suppliers with pagination and filtering.
-    
+
     Args:
         db: Database session
         authorization: Bearer token for authentication
         active_only: Filter to show only active suppliers
         page: Page number for pagination
         limit: Number of items per page
-        
+
     Returns:
         List of supplier summaries
     """
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authorization header"
+            detail="Missing authorization header",
         )
-    
+
     token = authorization.split(" ")[1]
     get_user_from_token(token, db)
-    
+
     query = db.query(Supplier)
     if active_only:
         query = query.filter(Supplier.is_active == True)
-    
+
     suppliers = query.offset((page - 1) * limit).limit(limit).all()
     return suppliers
 
@@ -128,17 +128,16 @@ async def get_supplier(
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authorization header"
+            detail="Missing authorization header",
         )
-    
+
     token = authorization.split(" ")[1]
     get_user_from_token(token, db)
-    
+
     supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
     if not supplier:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Supplier not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found"
         )
     return supplier
 
@@ -154,31 +153,30 @@ async def update_supplier(
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authorization header"
+            detail="Missing authorization header",
         )
-    
+
     token = authorization.split(" ")[1]
     user = get_user_from_token(token, db)
-    
+
     # Check permissions
     if user.role not in ["admin", "manager"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin and manager can update suppliers"
+            detail="Only admin and manager can update suppliers",
         )
-    
+
     supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
     if not supplier:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Supplier not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found"
         )
-    
+
     # Update fields
     update_data = supplier_update.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(supplier, field, value)
-    
+
     db.commit()
     db.refresh(supplier)
     return supplier
@@ -192,32 +190,31 @@ async def deactivate_supplier(
 ):
     """
     Deactivate a supplier instead of deleting.
-    
+
     This maintains referential integrity with existing purchase orders.
     """
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing authorization header"
+            detail="Missing authorization header",
         )
-    
+
     token = authorization.split(" ")[1]
     user = get_user_from_token(token, db)
-    
+
     # Check permissions
     if user.role not in ["admin"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only admin can deactivate suppliers"
+            detail="Only admin can deactivate suppliers",
         )
-    
+
     supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
     if not supplier:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Supplier not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found"
         )
-    
-    setattr(supplier, 'is_active', False)
+
+    setattr(supplier, "is_active", False)
     db.commit()
     return

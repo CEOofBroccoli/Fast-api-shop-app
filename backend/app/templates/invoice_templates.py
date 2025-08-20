@@ -3,6 +3,7 @@ Invoice template generator with improved N-Market branding
 """
 from backend.app.config.shop_settings import shop_settings
 
+
 def generate_invoice_header_html():
     """Generate professional invoice header with centered square logo"""
     return f"""
@@ -121,6 +122,7 @@ def generate_invoice_header_html():
     </html>
     """
 
+
 def generate_compact_header_html():
     """Generate compact header layout for navigation/mobile"""
     return f"""
@@ -135,6 +137,7 @@ def generate_compact_header_html():
         </div>
     </div>
     """
+
 
 def generate_email_signature_html():
     """Generate professional email signature with logo"""

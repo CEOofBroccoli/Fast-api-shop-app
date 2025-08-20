@@ -16,20 +16,39 @@ from backend.app.models import user, order, product
 from backend.app.schemas.user import user_create, user, token
 
 # Authentication imports
-from backend.app.auth.auth_handler import create_user_secure, authenticate_user, get_user_by_email, get_user, update_last_login
-from backend.app.auth.jwt_handler import create_access_token, verify_token, get_current_user
+from backend.app.auth.auth_handler import (
+    create_user_secure,
+    authenticate_user,
+    get_user_by_email,
+    get_user,
+    update_last_login,
+)
+from backend.app.auth.jwt_handler import (
+    create_access_token,
+    verify_token,
+    get_current_user,
+)
 from backend.app.config.shop_settings import shop_settings, get_shop_context
 
 # Route imports
-from backend.app.routes import orders, reports, products, users, suppliers, sales_orders, dashboard, invoices, shop
+from backend.app.routes import (
+    orders,
+    reports,
+    products,
+    users,
+    suppliers,
+    sales_orders,
+    dashboard,
+    invoices,
+    shop,
+)
 
 # Utility imports
 from backend.app.utils.redis_cache import cache as redis_cache
 
 # Basic logging setup
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -98,6 +117,7 @@ app.add_middleware(
 
 # Add security headers
 from backend.app.utils.security_headers import add_security_headers_middleware
+
 add_security_headers_middleware(app)
 
 # Serve static files (logos, images)
@@ -105,6 +125,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Register error handlers
 from backend.app.error_handlers import register_exception_handlers
+
 register_exception_handlers(app)
 
 # Include API route modules
@@ -117,6 +138,7 @@ app.include_router(sales_orders.router)
 app.include_router(dashboard.router)
 app.include_router(invoices.router)
 app.include_router(shop.router)
+
 
 @app.get("/")
 def root():
@@ -139,8 +161,8 @@ def root():
             "suppliers": "/suppliers",
             "reports": "/reports",
             "dashboard": "/dashboard",
-            "invoices": "/invoices"
-        }
+            "invoices": "/invoices",
+        },
     }
 
 
@@ -148,6 +170,7 @@ def root():
 def logo_showcase():
     """Redirect to logo implementation showcase page"""
     from fastapi.responses import FileResponse
+
     return FileResponse("static/logo-implementation-showcase.html")
 
 
@@ -161,18 +184,19 @@ def get_shop_info() -> Dict:
             "email": shop_settings.shop_email,
             "phone": shop_settings.shop_phone,
             "address": shop_settings.shop_address,
-            "website": shop_settings.shop_website
+            "website": shop_settings.shop_website,
         },
         "branding": {
             "logo_url": shop_settings.company_logo_url,
-            "currency": shop_settings.default_currency
+            "currency": shop_settings.default_currency,
         },
         "business_info": {
             "invoice_prefix": shop_settings.invoice_prefix,
             "tax_rate": shop_settings.tax_rate,
-            "invoice_terms": shop_settings.invoice_terms
-        }
+            "invoice_terms": shop_settings.invoice_terms,
+        },
     }
+
 
 @app.get("/health")
 def health_check(db_session: Session = Depends(get_db)):
@@ -184,29 +208,29 @@ def health_check(db_session: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Database health check failed: {str(e)}")
         db_status = "inactive"
-    
+
     # Check Redis connection
     redis_status = "active" if redis_cache._client else "inactive"
-    
+
     return {
-        "status": "healthy" if db_status == "active" and redis_status == "active" else "degraded",
+        "status": "healthy"
+        if db_status == "active" and redis_status == "active"
+        else "degraded",
         "api_version": "1.0.0",
-        "components": {
-            "database": db_status,
-            "redis_cache": redis_status
-        },
-        "timestamp": datetime.now().isoformat()
+        "components": {"database": db_status, "redis_cache": redis_status},
+        "timestamp": datetime.now().isoformat(),
     }
 
 
 # Rate limiting for signup endpoint
 from backend.app.routes.auth_email import check_rate_limit
 
+
 @app.post("/signup", response_model=user)
 def sign_up(user_data: user_create, db: Session = Depends(get_db)):
     """User registration endpoint with rate limiting"""
     logger.setLevel(logging.DEBUG)
-    
+
     check_rate_limit(f"signup:{user_data.email}")
     try:
         logger.debug(f"Creating user with email: {user_data.email}")
@@ -218,11 +242,15 @@ def sign_up(user_data: user_create, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(ve))
     except Exception as e:
         logger.error(f"Error during signup: {str(e)}", exc_info=True)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Signup failed")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Signup failed"
+        )
 
 
 @app.post("/login", response_model=token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+def login(
+    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+):
     """User login endpoint with rate limiting and email verification"""
     check_rate_limit(f"login:{form_data.username}")
     user_obj = authenticate_user(db, form_data.username, form_data.password)
@@ -233,7 +261,9 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not getattr(user_obj, "is_verified", False):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Email not verified")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Email not verified"
+        )
     update_last_login(db, user_obj)
     access_token_expires = timedelta(minutes=30)
     access_token = create_access_token(
@@ -241,10 +271,12 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+
 @app.get("/users/me", response_model=user)
 def read_users_me(current_user: user = Depends(get_current_user)):
     """Get current user information"""
     return current_user
+
 
 @app.get("/test-db")
 def test_db(db_session: Session = Depends(get_db)):

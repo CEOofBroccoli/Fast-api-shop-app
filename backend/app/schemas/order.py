@@ -3,11 +3,13 @@ from datetime import datetime
 from typing import Optional
 import enum
 
+
 class InvoiceStatus(str, enum.Enum):
     DRAFT = "Draft"
     SENT = "Sent"
     RECEIVED = "Received"
     CLOSED = "Closed"
+
 
 class PurchaseOrderBase(BaseModel):
     supplier_id: int
@@ -16,13 +18,16 @@ class PurchaseOrderBase(BaseModel):
     unit_cost: float
     notes: Optional[str] = None
 
+
 class PurchaseOrderCreate(PurchaseOrderBase):
     pass
+
 
 class PurchaseOrderUpdate(BaseModel):
     status: Optional[InvoiceStatus] = None
     actual_delivery_date: Optional[datetime] = None
     notes: Optional[str] = None
+
 
 class PurchaseOrder(PurchaseOrderBase):
     id: int

@@ -4,12 +4,14 @@ from sqlalchemy.sql import func
 from backend.app.database import Base
 import enum
 
+
 class SalesOrderStatus(enum.Enum):
     PENDING = "Pending"
     CONFIRMED = "Confirmed"
     SHIPPED = "Shipped"
     DELIVERED = "Delivered"
     CANCELLED = "Cancelled"
+
 
 class SalesOrder(Base):
     __tablename__ = "sales_orders"
@@ -26,7 +28,9 @@ class SalesOrder(Base):
     delivered_date = Column(DateTime(timezone=True), nullable=True)
     notes = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+    updated_at = Column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
 
     # Relationships
     customer = relationship("User", backref="sales_orders")
@@ -35,6 +39,7 @@ class SalesOrder(Base):
 
 class SalesOrderItem(Base):
     """For multi-product sales orders"""
+
     __tablename__ = "sales_order_items"
 
     id = Column(Integer, primary_key=True, index=True)
