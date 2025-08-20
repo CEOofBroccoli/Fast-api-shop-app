@@ -42,7 +42,6 @@ pylint==3.0.3
 
 # Security Testing
 bandit==1.7.6
-safety==3.0.1
 
 # Documentation
 mkdocs==1.5.3

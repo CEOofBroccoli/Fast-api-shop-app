@@ -143,15 +143,15 @@ jobs:
       - name: Install security scanning tools
         run: |
           python -m pip install --upgrade pip
-          pip install bandit safety
+          pip install bandit pip-audit
 
       - name: Run Bandit security linter
         run: |
           bandit -r backend/ -f json -o bandit-report.json || true
 
-      - name: Run Safety dependency scanner
+      - name: Run pip-audit dependency scanner
         run: |
-          safety check --json --output safety-report.json || true
+          pip-audit --format=json --output=audit-report.json || true
 
       - name: Upload security reports
         uses: actions/upload-artifact@v4
@@ -159,7 +159,7 @@ jobs:
           name: security-reports
           path: |
             bandit-report.json
-            safety-report.json
+            audit-report.json
 
   build:
     name: Build Docker Image
