@@ -1,7 +1,7 @@
 # 🏪 N-Market - FastAPI Inventory Management System
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688.svg?style=flat&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com)
-[![Python](https://img.shields.io/badge/Python-3.13+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.6-009688.svg?style=flat&logo=FastAPI&logoColor=white)](https://fastapi.tiangolo.com)
+[![Python](https://img.shields.io/badge/Python-3.12+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://python.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-336791.svg?style=flat&logo=postgresql&logoColor=white)](https://postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-7.0+-DC382D.svg?style=flat&logo=redis&logoColor=white)](https://redis.io)
 [![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED.svg?style=flat&logo=docker&logoColor=white)](https://docker.com)
@@ -19,7 +19,7 @@
 
 ## 🚀 Features Overview
 
-### 🎨 **Professional Branding System** ⭐️ _NEW_
+### 🎨 **Professional Branding System**
 
 - **Context-Aware Logo Layouts** - Different layouts for different use cases
   - 📧 **Email Headers**: Centered 120px square logo with professional typography
@@ -466,38 +466,6 @@ az containerapp create \
 - API versioning strategy
 - Audit logging for sensitive operations
 
-## 📈 N-Market Roadmap
-
-### **Completed Features** ✅
-
-- [x] **Professional Branding System** - Context-aware logo layouts
-- [x] **Comprehensive Inventory Management** - Products, suppliers, orders
-- [x] **Business Intelligence Dashboard** - Real-time analytics and insights
-- [x] **Production-Ready Deployment** - Docker, CI/CD, monitoring
-- [x] **Professional Documentation** - Complete API docs and guides
-
-### **Upcoming Features** 🚀
-
-- [ ] **Enhanced Mobile Experience** - Native mobile app with barcode scanning
-- [ ] **Advanced Analytics** - Machine learning insights and demand forecasting
-- [ ] **Multi-location Support** - Warehouse management with location tracking
-- [ ] **Integration APIs** - Connect with accounting software (QuickBooks, Xero)
-- [ ] **Automated Reordering** - Smart inventory replenishment
-- [ ] **Customer Portal** - Self-service ordering and account management
-- [ ] **Multi-tenant SaaS** - Support multiple businesses on one platform
-- [ ] **Advanced Reporting** - Custom report builder with export options
-
-### **Brand Enhancement Roadmap** 🎨
-
-- [ ] **Dynamic Theming** - Customizable color schemes and branding
-- [ ] **Logo Animation** - Animated logos for web and mobile
-- [ ] **Print Templates** - Business cards, letterheads, marketing materials
-- [ ] **Brand Guidelines** - Automated brand consistency checking
-
-## 🤝 Contributing
-
-We welcome contributions to N-Market! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
 ### **Development Process**
 
 1. Fork the repository
@@ -506,33 +474,11 @@ We welcome contributions to N-Market! Please see our [Contributing Guide](CONTRI
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-### **Contribution Areas**
-
-- 🐛 Bug fixes and improvements
-- ✨ New features and enhancements (especially branding and UI/UX)
-- 📚 Documentation improvements
-- 🧪 Test coverage expansion
-- 🔧 DevOps and deployment optimization
-- 🎨 Logo and branding enhancements
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
-
-- **FastAPI** team for the amazing framework
-- **SQLAlchemy** team for the robust ORM
-- **Pydantic** team for data validation
-- **N-Market Community** for continuous feedback and support
-- Open source community for continuous inspiration
-
 ---
-
-**⭐ Star this repository if N-Market helped you!**
-
-For questions, issues, or feature requests, please [open an issue](https://github.com/yourusername/n-market-inventory-system/issues).
-
 📧 **Contact:** [modavari005@gmail.com](mailto:modavari005@gmail.com)  
 🌐 **Website:** [https://n-market.ir](https://n-market.ir)  
 📱 **Logo Showcase:** [http://localhost:8000/logo-showcase](http://localhost:8000/logo-showcase)
