@@ -1,18 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Body, Request
-from sqlalchemy.orm import Session
-from backend.app.database import get_db
-from backend.app.models.user import User
-from backend.app.auth.jwt_handler import create_access_token, verify_token
-from backend.app.auth.auth_handler import get_user_by_email, get_password_hash
-from backend.app.schemas.user import user as UserSchema, user_create
-from backend.app.models.email_token import EmailToken
-from backend.app.email_utils import send_email
-from backend.app.utils.rate_limiter import rate_limit
-from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime, timedelta
-import secrets
 import logging
+import secrets
+from datetime import datetime, timedelta
+from typing import Optional
+
+from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from backend.app.auth.auth_handler import get_password_hash, get_user_by_email
+from backend.app.auth.jwt_handler import create_access_token, verify_token
+from backend.app.database import get_db
+from backend.app.email_utils import send_email
+from backend.app.models.email_token import EmailToken
+from backend.app.models.user import User
+from backend.app.schemas.user import user as UserSchema
+from backend.app.schemas.user import user_create
+from backend.app.utils.rate_limiter import rate_limit
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["Auth"])

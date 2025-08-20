@@ -1,12 +1,13 @@
 # Database configuration and connection management
+import logging
 import os
 import sys
+
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import SQLAlchemyError
-from dotenv import load_dotenv
-import logging
 
 logger = logging.getLogger(__name__)
 

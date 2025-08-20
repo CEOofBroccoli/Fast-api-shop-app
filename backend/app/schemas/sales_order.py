@@ -1,7 +1,8 @@
-from pydantic import BaseModel
-from datetime import datetime
-from typing import Optional, List
 import enum
+from datetime import datetime
+from typing import List, Optional
+
+from pydantic import BaseModel
 
 
 class SalesOrderStatus(str, enum.Enum):

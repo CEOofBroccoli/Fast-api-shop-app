@@ -1,20 +1,21 @@
-from fastapi import HTTPException, Request, status
-from fastapi.responses import JSONResponse
-from sqlalchemy.exc import (
-    SQLAlchemyError,
-    IntegrityError,
-    OperationalError,
-    TimeoutError,
-)
-from pydantic import ValidationError as PydanticValidationError
-from jose import JWTError
+import html
 import logging
+import re
 import traceback
-from typing import Dict, Any, Optional
 import uuid
 from datetime import datetime, timezone
-import re
-import html
+from typing import Any, Dict, Optional
+
+from fastapi import HTTPException, Request, status
+from fastapi.responses import JSONResponse
+from jose import JWTError
+from pydantic import ValidationError as PydanticValidationError
+from sqlalchemy.exc import (
+    IntegrityError,
+    OperationalError,
+    SQLAlchemyError,
+    TimeoutError,
+)
 
 # Configure logging
 logger = logging.getLogger(__name__)

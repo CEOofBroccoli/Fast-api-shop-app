@@ -1,17 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+import re
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from sqlalchemy import and_, func
+from sqlalchemy.orm import Session
+
+from backend.app.auth.jwt_handler import verify_token
 from backend.app.database import get_db
 from backend.app.models.order import PurchaseOrder
 from backend.app.models.product import Product
 from backend.app.models.sales_order import SalesOrder, SalesOrderStatus
 from backend.app.models.supplier import Supplier
-from sqlalchemy import func, and_
-from backend.app.auth.jwt_handler import verify_token
-from fastapi import Header, Query
 from backend.app.models.user import User
-from datetime import datetime, timedelta
-import re
 
 router = APIRouter(prefix="/report", tags=["Reports"])
 

@@ -1,19 +1,18 @@
 # Product management API routes
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Header, Request
-from sqlalchemy.orm import Session
-from typing import Optional, List
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request, status
+from pydantic import BaseModel
 from sqlalchemy import and_
+from sqlalchemy.orm import Session
+
+from backend.app.auth.jwt_handler import verify_token
 from backend.app.database import get_db
 from backend.app.models.product import Product, StockChangeLog
-from backend.app.schemas.product import (
-    Product as ProductSchema,
-    ProductCreate,
-    ProductBase,
-)
-from backend.app.auth.jwt_handler import verify_token
 from backend.app.models.user import User
-from pydantic import BaseModel
-from backend.app.utils.redis_cache import cached_async, cache
+from backend.app.schemas.product import Product as ProductSchema
+from backend.app.schemas.product import ProductBase, ProductCreate
+from backend.app.utils.redis_cache import cache, cached_async
 
 router = APIRouter(prefix="/products", tags=["Products"])
 

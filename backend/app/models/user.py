@@ -1,8 +1,9 @@
 # User model for authentication and user management
-from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from backend.app.database import Base
 from sqlalchemy.sql import func
+
+from backend.app.database import Base
 
 
 class User(Base):

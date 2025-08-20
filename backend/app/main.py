@@ -1,47 +1,48 @@
 # Main FastAPI application for N-Market inventory management system
-from fastapi import FastAPI, Depends, HTTPException, status, Request
-from fastapi.staticfiles import StaticFiles
 import logging
 import os
-from datetime import timedelta, datetime
-from typing import List, Dict
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from fastapi.middleware.cors import CORSMiddleware
+from datetime import datetime, timedelta
+from typing import Dict, List
 
-# Database imports
-from backend.app.database import engine, Base, get_db
-from backend.app.models import user, order, product
-from backend.app.schemas.user import user_create, user, token
+from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 # Authentication imports
 from backend.app.auth.auth_handler import (
-    create_user_secure,
     authenticate_user,
-    get_user_by_email,
+    create_user_secure,
     get_user,
+    get_user_by_email,
     update_last_login,
 )
 from backend.app.auth.jwt_handler import (
     create_access_token,
-    verify_token,
     get_current_user,
+    verify_token,
 )
-from backend.app.config.shop_settings import shop_settings, get_shop_context
+from backend.app.config.shop_settings import get_shop_context, shop_settings
+
+# Database imports
+from backend.app.database import Base, engine, get_db
+from backend.app.models import order, product, user
 
 # Route imports
 from backend.app.routes import (
-    orders,
-    reports,
-    products,
-    users,
-    suppliers,
-    sales_orders,
     dashboard,
     invoices,
+    orders,
+    products,
+    reports,
+    sales_orders,
     shop,
+    suppliers,
+    users,
 )
+from backend.app.schemas.user import token, user, user_create
 
 # Utility imports
 from backend.app.utils.redis_cache import cache as redis_cache

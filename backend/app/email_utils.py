@@ -1,8 +1,9 @@
+import logging
 import os
 import smtplib
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-import logging
+from email.mime.text import MIMEText
+
 from backend.app.config.shop_settings import shop_settings
 
 logger = logging.getLogger(__name__)

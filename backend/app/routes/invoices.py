@@ -1,22 +1,23 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Response
-from fastapi import Header
-from sqlalchemy.orm import Session
+import os
+import tempfile
+from datetime import datetime
+from io import BytesIO
 from typing import Dict, List
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, letter
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus.tableofcontents import TableOfContents
+from sqlalchemy.orm import Session
+
+from backend.app.auth.jwt_handler import verify_token
 from backend.app.database import get_db
+from backend.app.models.product import Product
 from backend.app.models.sales_order import SalesOrder, SalesOrderItem, SalesOrderStatus
 from backend.app.models.user import User
-from backend.app.models.product import Product
-from backend.app.auth.jwt_handler import verify_token
-from datetime import datetime
-from reportlab.lib.pagesizes import letter, A4
-from reportlab.lib import colors
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-from reportlab.platypus.tableofcontents import TableOfContents
-from io import BytesIO
-import tempfile
-import os
 
 router = APIRouter(prefix="/invoices", tags=["invoices"])
 

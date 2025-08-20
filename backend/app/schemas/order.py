@@ -1,7 +1,8 @@
-from pydantic import BaseModel
+import enum
 from datetime import datetime
 from typing import Optional
-import enum
+
+from pydantic import BaseModel
 
 
 class InvoiceStatus(str, enum.Enum):

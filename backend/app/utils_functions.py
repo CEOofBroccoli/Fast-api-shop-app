@@ -1,7 +1,7 @@
 import os
 import smtplib
-from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 
 def send_email(to_email: str, subject: str, body: str):
@@ -29,19 +29,21 @@ def send_email(to_email: str, subject: str, body: str):
         server.sendmail(str(email_from), str(to_email), msg.as_string())
 
 
-from fastapi import HTTPException, status, Header
-from sqlalchemy.orm import Session
+import logging
+import re
 from typing import Optional, Tuple
+
+from fastapi import Header, HTTPException, status
+from sqlalchemy.orm import Session
+
 from backend.app.auth.jwt_handler import verify_token
-from backend.app.models.user import User
 from backend.app.exceptions import (
     AuthenticationError,
     AuthorizationError,
-    ValidationError,
     ResourceNotFoundError,
+    ValidationError,
 )
-import re
-import logging
+from backend.app.models.user import User
 
 logger = logging.getLogger(__name__)
 

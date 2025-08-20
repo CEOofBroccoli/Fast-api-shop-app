@@ -1,16 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header, Query
-from sqlalchemy.orm import Session
 from typing import List, Optional
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
+from backend.app.auth.jwt_handler import verify_token
 from backend.app.database import get_db
 from backend.app.models.supplier import Supplier
-from backend.app.schemas.supplier import (
-    Supplier as SupplierSchema,
-    SupplierCreate,
-    SupplierUpdate,
-    SupplierSummary,
-)
-from backend.app.auth.jwt_handler import verify_token
 from backend.app.models.user import User
+from backend.app.schemas.supplier import Supplier as SupplierSchema
+from backend.app.schemas.supplier import SupplierCreate, SupplierSummary, SupplierUpdate
 from backend.app.utils.redis_cache import cached
 
 router = APIRouter(prefix="/suppliers", tags=["Suppliers"])

@@ -1,20 +1,22 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Body
+import secrets
+from datetime import datetime, timedelta
+from typing import Optional
+
+from fastapi import APIRouter, Body, Depends, HTTPException, status
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from backend.app.database import get_db
-from backend.app.models.user import User
-from backend.app.auth.jwt_handler import create_access_token, verify_token
+
 from backend.app.auth.auth_handler import (
-    get_user_by_email,
     get_password_hash,
+    get_user_by_email,
     update_last_login,
 )
-from backend.app.models.email_token import EmailToken
+from backend.app.auth.jwt_handler import create_access_token, verify_token
+from backend.app.database import get_db
 from backend.app.email_utils import send_email
+from backend.app.models.email_token import EmailToken
+from backend.app.models.user import User
 from backend.app.schemas.user import user as UserSchema
-from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime, timedelta
-import secrets
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

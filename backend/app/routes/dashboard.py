@@ -1,19 +1,21 @@
 # Dashboard API routes for business analytics and metrics
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+import logging
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional
+
+from fastapi import APIRouter, Depends, Header, HTTPException, status
+from pydantic import BaseModel
+from sqlalchemy import and_, func
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_
-from typing import Dict, Any, List, Optional
+
+from backend.app.auth.jwt_handler import verify_token
 from backend.app.database import get_db
+from backend.app.models.order import InvoiceStatus, PurchaseOrder
 from backend.app.models.product import Product
 from backend.app.models.sales_order import SalesOrder, SalesOrderStatus
-from backend.app.models.order import PurchaseOrder, InvoiceStatus
-from backend.app.models.user import User
 from backend.app.models.supplier import Supplier
-from backend.app.auth.jwt_handler import verify_token
+from backend.app.models.user import User
 from backend.app.utils.redis_cache import cached
-from datetime import datetime, timedelta
-from pydantic import BaseModel
-import logging
 
 # Setup logging for debugging
 logger = logging.getLogger(__name__)

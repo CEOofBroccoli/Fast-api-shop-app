@@ -1,15 +1,16 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends, status
-from fastapi import Header
-from typing import List
 import os
 import shutil
 import time
 from pathlib import Path
-from backend.app.auth.jwt_handler import verify_token
-from backend.app.models.user import User
-from backend.app.database import get_db
+from typing import List
+
+from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
+
+from backend.app.auth.jwt_handler import verify_token
 from backend.app.config.shop_settings import shop_settings
+from backend.app.database import get_db
+from backend.app.models.user import User
 
 router = APIRouter(prefix="/shop", tags=["shop"])
 

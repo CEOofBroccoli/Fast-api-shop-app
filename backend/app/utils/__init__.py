@@ -1,6 +1,6 @@
 # Utils package exports - simplified for debugging
 try:
-    from .redis_cache import cached, cache, RedisCache
+    from .redis_cache import RedisCache, cache, cached
 except ImportError as e:
     print(f"Error importing redis_cache: {e}")
     cached = cache = RedisCache = None
@@ -15,7 +15,7 @@ except ImportError as e:
     SecurityHeadersMiddleware = add_security_headers_middleware = None
 
 try:
-    from .rate_limiter import RateLimiter, rate_limit, limiter, RATE_LIMIT_CONFIGS
+    from .rate_limiter import RATE_LIMIT_CONFIGS, RateLimiter, limiter, rate_limit
 except ImportError as e:
     print(f"Error importing rate_limiter: {e}")
     RateLimiter = rate_limit = limiter = RATE_LIMIT_CONFIGS = None
@@ -23,10 +23,10 @@ except ImportError as e:
 # Test logging_config import - back to normal
 try:
     from .logging_config import (
-        setup_logging,
-        get_request_logger,
-        configure_logging_from_env,
         JsonFormatter,
+        configure_logging_from_env,
+        get_request_logger,
+        setup_logging,
     )
 except ImportError as e:
     print(f"Error importing logging_config: {e}")

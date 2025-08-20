@@ -1,11 +1,13 @@
 # Authentication handler for user management and password security
 import re
+from datetime import datetime, timezone
+
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+
+from backend.app.auth.jwt_handler import create_access_token
 from backend.app.models.user import User
 from backend.app.schemas.user import user_create
-from backend.app.auth.jwt_handler import create_access_token
-from datetime import datetime, timezone
 
 # Password hashing configuration using bcrypt
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
