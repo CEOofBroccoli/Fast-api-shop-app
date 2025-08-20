@@ -110,8 +110,14 @@ from backend.app.utils.security_headers import add_security_headers_middleware
 
 add_security_headers_middleware(app)
 
-# Serve static files (logos, images)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# Serve static files (logos, images) - only if directory exists
+import os
+static_dir = "static"
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    logging.info(f"Static files mounted from {static_dir}")
+else:
+    logging.warning(f"Static directory {static_dir} not found, static files not mounted")
 
 # Register error handlers
 from backend.app.error_handlers import register_exception_handlers

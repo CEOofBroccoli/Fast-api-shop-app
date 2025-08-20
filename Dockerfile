@@ -70,8 +70,14 @@ COPY --from=builder /usr/local/bin /usr/local/bin
 # Copy application code
 COPY --chown=appuser:appgroup ./backend /app/backend
 
+# Copy static files
+COPY --chown=appuser:appgroup ./static /app/static
+
 # Create directory for logs and database
 RUN mkdir -p /app/logs /app/data && chown -R appuser:appgroup /app/logs /app/data
+
+# Ensure static directory has proper permissions and create uploads if needed
+RUN mkdir -p /app/static/uploads && chown -R appuser:appgroup /app/static
 
 # Switch to non-root user
 USER appuser
