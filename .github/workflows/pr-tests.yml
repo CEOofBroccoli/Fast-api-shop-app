@@ -11,7 +11,7 @@ permissions:
   issues: write
 
 env:
-  PYTHON_VERSION: "3.11"
+  PYTHON_VERSION: "3.13"
 
 jobs:
   pr-tests:
@@ -91,10 +91,21 @@ jobs:
           flake8 backend/ --count --select=E9,F63,F7,F82 --show-source --statistics
 
       - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/testdb
         run: |
           python -m alembic upgrade head
 
       - name: Run tests
+        env:
+          DATABASE_URL: postgresql://testuser:testpassword@localhost:5432/testdb
+          JWT_SECRET_KEY: test-jwt-secret-key-for-ci
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          REDIS_PASSWORD: ""
+          DEBUG: 1
+          ENVIRONMENT: testing
+          LOG_LEVEL: INFO
         run: |
           python -m pytest tests/ -v --cov=backend
 
