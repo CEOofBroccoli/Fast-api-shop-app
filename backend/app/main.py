@@ -214,9 +214,11 @@ def health_check(db_session: Session = Depends(get_db)):
     redis_status = "active" if redis_cache._client else "inactive"
 
     return {
-        "status": "healthy"
-        if db_status == "active" and redis_status == "active"
-        else "degraded",
+        "status": (
+            "healthy"
+            if db_status == "active" and redis_status == "active"
+            else "degraded"
+        ),
         "api_version": "1.0.0",
         "components": {"database": db_status, "redis_cache": redis_status},
         "timestamp": datetime.now().isoformat(),

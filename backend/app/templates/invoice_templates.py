@@ -1,6 +1,7 @@
 """
 Invoice template generator with improved N-Market branding
 """
+
 from backend.app.config.shop_settings import shop_settings
 
 

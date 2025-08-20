@@ -163,9 +163,11 @@ async def generate_invoice(
         item_data.append(
             [
                 str(i),
-                getattr(product, "name", f"Product ID: {item.product_id}")
-                if product
-                else f"Product ID: {item.product_id}",
+                (
+                    getattr(product, "name", f"Product ID: {item.product_id}")
+                    if product
+                    else f"Product ID: {item.product_id}"
+                ),
                 str(item.quantity),
                 f"${item.unit_price:.2f}",
                 f"${item_total:.2f}",
@@ -362,9 +364,11 @@ async def generate_receipt(
 
         item_data.append(
             [
-                getattr(product, "name", f"Product ID: {item.product_id}")
-                if product
-                else f"Product ID: {item.product_id}",
+                (
+                    getattr(product, "name", f"Product ID: {item.product_id}")
+                    if product
+                    else f"Product ID: {item.product_id}"
+                ),
                 str(item.quantity),
                 f"${item.unit_price:.2f}",
                 f"${item_total:.2f}",

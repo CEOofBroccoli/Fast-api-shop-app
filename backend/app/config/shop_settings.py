@@ -2,6 +2,7 @@
 Shop/Company Configuration
 Centralized settings for business information and branding.
 """
+
 import os
 from typing import Optional
 

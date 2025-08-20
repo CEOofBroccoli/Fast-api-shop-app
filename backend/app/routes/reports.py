@@ -185,11 +185,11 @@ async def get_best_selling_products(
                 "total_sold": product.total_sold,
                 "total_revenue": float(product.total_revenue),
                 "order_count": product.order_count,
-                "average_quantity_per_order": round(
-                    product.total_sold / product.order_count, 2
-                )
-                if product.order_count > 0
-                else 0,
+                "average_quantity_per_order": (
+                    round(product.total_sold / product.order_count, 2)
+                    if product.order_count > 0
+                    else 0
+                ),
             }
         )
 
@@ -346,14 +346,17 @@ async def get_supplier_ratings(
         "suppliers": supplier_ratings,
         "summary": {
             "total_suppliers": len(supplier_ratings),
-            "average_rating": round(
-                sum(s["rating"] for s in supplier_ratings) / len(supplier_ratings), 1
-            )
-            if supplier_ratings
-            else 0,
-            "top_performer": supplier_ratings[0]["supplier_name"]
-            if supplier_ratings
-            else None,
+            "average_rating": (
+                round(
+                    sum(s["rating"] for s in supplier_ratings) / len(supplier_ratings),
+                    1,
+                )
+                if supplier_ratings
+                else 0
+            ),
+            "top_performer": (
+                supplier_ratings[0]["supplier_name"] if supplier_ratings else None
+            ),
             "overall_on_time_rate": round(
                 sum(s["on_time_deliveries"] for s in supplier_ratings)
                 / max(sum(s["completed_orders"] for s in supplier_ratings), 1)
