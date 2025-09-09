@@ -1,0 +1,11 @@
+@font-face {
+    font-family: "lalezar";
+    src: url("./assets/fonts/Lalezar-Regular.ttf");
+}
+@font-face {
+    font-family: "iransans";
+    src: url("./assets/fonts/IranianSans.ttf");
+}
+body{
+    font-family: lalezar;
+}
