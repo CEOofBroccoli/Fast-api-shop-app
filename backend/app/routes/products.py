@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from backend.app.auth.jwt_handler import verify_token
+from backend.app.auth.jwt_handler import verify_token, decode_token
 from backend.app.database import get_db
 from backend.app.models.product import Product, StockChangeLog
 from backend.app.models.user import User
@@ -18,13 +18,13 @@ router = APIRouter(prefix="/products", tags=["Products"])
 
 
 def get_user_from_token(token: str, db: Session):
-    """Helper function to get user from JWT token"""
-    username = verify_token(token)
+    """Helper function to get user from JWT token (now decodes full payload)."""
+    payload = decode_token(token)
+    if not payload:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials")
+    username = payload.get("sub")
     if not username:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-        )
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authentication credentials")
     user = db.query(User).filter(User.username == username).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -118,6 +118,18 @@ async def create_product(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing authorization header",
         )
+    # Validate token & role
+    token = authorization.split(" ")[1]
+    user = get_user_from_token(token, db)
+    if user.role not in ["admin", "manager", "staff"]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    # Input validation
+    if product.price < 0:
+        raise HTTPException(status_code=400, detail="Price cannot be negative")
+    if product.quantity < 0:
+        raise HTTPException(status_code=400, detail="Quantity cannot be negative")
+    if product.min_threshold < 0:
+        raise HTTPException(status_code=400, detail="min_threshold cannot be negative")
     # Check if SKU already exists
     existing_product = db.query(Product).filter(Product.sku == product.sku).first()
     if existing_product:
@@ -153,6 +165,7 @@ async def list_products(
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(10, ge=1, le=100, description="Items per page"),
     low_stock: Optional[bool] = Query(None, description="Filter by low stock items"),
+    product_group: Optional[str] = Query(None, description="Filter by product group/category"),
 ):
     """
     List and filter products in the inventory system.
@@ -184,6 +197,9 @@ async def list_products(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing authorization header",
         )
+    token = authorization.split(" ")[1]
+    # Validate token (any authenticated user can list)
+    get_user_from_token(token, db)
     query = db.query(Product)
     # Search by Name or SKU
     if search:
@@ -195,6 +211,9 @@ async def list_products(
         query = query.filter(Product.price >= min_price)
     elif max_price is not None:
         query = query.filter(Product.price <= max_price)
+    # Filter by product_group
+    if product_group:
+        query = query.filter(Product.product_group == product_group)
     # Sort by
     if sort_by:
         if sort_by == "name_asc":
@@ -281,6 +300,16 @@ async def update_product(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing authorization header",
         )
+    token = authorization.split(" ")[1]
+    user = get_user_from_token(token, db)
+    if user.role not in ["admin", "manager", "staff"]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    if product.price < 0:
+        raise HTTPException(status_code=400, detail="Price cannot be negative")
+    if product.quantity < 0:
+        raise HTTPException(status_code=400, detail="Quantity cannot be negative")
+    if product.min_threshold < 0:
+        raise HTTPException(status_code=400, detail="min_threshold cannot be negative")
     db_product = db.query(Product).filter(Product.id == product_id).first()
     if not db_product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
@@ -339,6 +368,8 @@ async def adjust_stock(
         )
     token = authorization.split(" ")[1]
     user = get_user_from_token(token, db)
+    if user.role not in ["admin", "manager", "staff"]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
     db_product = db.query(Product).filter(Product.id == product_id).first()
     if not db_product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")

@@ -29,6 +29,7 @@ from backend.app.models import order, product, user
 # Route imports
 from backend.app.routes import dashboard, invoices, orders, products, reports, sales_orders, shop, suppliers, users
 from backend.app.schemas.user import token, user, user_create
+from backend.app.models.user import User as UserModel
 
 # Utility imports
 from backend.app.utils.redis_cache import cache as redis_cache
@@ -219,9 +220,11 @@ def health_check(db_session: Session = Depends(get_db)):
 
 # Rate limiting for signup endpoint
 from backend.app.routes.auth_email import check_rate_limit
+from backend.app.utils.rate_limiter import rate_limit
 
 
 @app.post("/signup", response_model=user)
+@rate_limit(endpoint_type="signup")
 def sign_up(user_data: user_create, db: Session = Depends(get_db)):
     """User registration endpoint with rate limiting"""
     logger.setLevel(logging.DEBUG)
@@ -241,6 +244,7 @@ def sign_up(user_data: user_create, db: Session = Depends(get_db)):
 
 
 @app.post("/login", response_model=token)
+@rate_limit(endpoint_type="auth")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """User login endpoint with rate limiting and email verification"""
     check_rate_limit(f"login:{form_data.username}")
@@ -255,14 +259,23 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Email not verified")
     update_last_login(db, user_obj)
     access_token_expires = timedelta(minutes=30)
-    access_token = create_access_token(data={"sub": user_obj.username}, expires_delta=access_token_expires)
+    access_token = create_access_token(
+        data={"sub": user_obj.username, "uid": user_obj.id, "role": user_obj.role},
+        expires_delta=access_token_expires,
+    )
     return {"access_token": access_token, "token_type": "bearer"}
 
 
 @app.get("/users/me", response_model=user)
-def read_users_me(current_user: user = Depends(get_current_user)):
-    """Get current user information"""
-    return current_user
+def read_users_me(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Get current authenticated user's full persisted record."""
+    username = current_user.get("sub") if isinstance(current_user, dict) else None
+    if not username:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+    user_obj = db.query(UserModel).filter(UserModel.username == username).first()
+    if not user_obj:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user_obj
 
 
 @app.get("/test-db")

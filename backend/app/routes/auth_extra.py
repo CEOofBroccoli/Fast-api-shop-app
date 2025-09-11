@@ -6,7 +6,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from backend.app.auth.auth_handler import get_password_hash, get_user_by_email, update_last_login
+from backend.app.auth.auth_handler import get_password_hash, get_user_by_email, update_last_login, is_password_complex
 from backend.app.auth.jwt_handler import create_access_token, verify_token
 from backend.app.database import get_db
 from backend.app.email_utils import send_email
@@ -56,6 +56,11 @@ async def reset_password(data: PasswordResetConfirm, db: Session = Depends(get_d
     user = db.query(User).filter(User.id == db_token.user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    if not is_password_complex(data.new_password):
+        raise HTTPException(
+            status_code=400,
+            detail="Password must be at least 8 chars and include letters, numbers, special characters.",
+        )
     setattr(user, "hashed_password", get_password_hash(data.new_password))
     db.commit()
     db.refresh(user)

@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from dotenv import load_dotenv
 from fastapi import Depends, HTTPException, status
@@ -17,6 +17,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 15
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+    """Create a JWT access token.
+
+    Expects data to already contain domain claims like sub (username), uid (user id), role.
+    Automatically injects exp claim.
+    """
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
@@ -28,12 +33,18 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 
 def verify_token(token: str):
+    """Return username (sub) if token valid, else None (backward compatibility)."""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if username is None:
-            return None
-        return username
+        return payload.get("sub")
+    except JWTError:
+        return None
+
+
+def decode_token(token: str) -> Optional[Dict[str, Any]]:
+    """Decode token returning full payload or None."""
+    try:
+        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
         return None
 
@@ -44,7 +55,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    username = verify_token(token)
-    if username is None:
+    full = decode_token(token)
+    if not full or not full.get("sub"):
         raise credentials_exception
-    return username
+    return full

@@ -3,6 +3,7 @@ import re
 from datetime import datetime, timezone
 
 from passlib.context import CryptContext
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from backend.app.auth.jwt_handler import create_access_token
@@ -56,11 +57,18 @@ def authenticate_user(db: Session, username: str, password: str):
 
 
 def create_user_secure(db: Session, user: user_create):
-    """Create new user with password validation and security checks"""
+    """Create new user with password validation and security checks.
+
+    Adds pre-insert uniqueness checks for username & email and handles integrity errors gracefully.
+    """
     if not is_password_complex(user.password):
-        raise ValueError("Password must be at least 8 characters and include letters, numbers, and special characters.")
+        raise ValueError(
+            "Password must be at least 8 characters and include letters, numbers, and special characters."
+        )
     if get_user_by_email(db, user.email):
         raise ValueError("Email already registered.")
+    if get_user(db, user.username):
+        raise ValueError("Username already taken.")
     hashed_password = get_password_hash(user.password)
     db_user = User(
         full_name=user.full_name,
@@ -68,9 +76,13 @@ def create_user_secure(db: Session, user: user_create):
         email=user.email,
         hashed_password=hashed_password,
     )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    try:
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("User with provided username or email already exists.")
     return db_user
 
 
@@ -96,9 +108,13 @@ def require_role(user, allowed_roles):
 # Enhanced create_user with password complexity and email uniqueness
 def create_user(db: Session, user: user_create):
     if not is_password_complex(user.password):
-        raise ValueError("Password must be at least 8 characters and include letters, numbers, and special characters.")
+        raise ValueError(
+            "Password must be at least 8 characters and include letters, numbers, and special characters."
+        )
     if get_user_by_email(db, user.email):
         raise ValueError("Email already registered.")
+    if get_user(db, user.username):
+        raise ValueError("Username already taken.")
     hashed_password = get_password_hash(user.password)
     db_user = User(
         full_name=user.full_name,
@@ -106,9 +122,13 @@ def create_user(db: Session, user: user_create):
         email=user.email,
         hashed_password=hashed_password,
     )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    try:
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("User with provided username or email already exists.")
     return db_user
 
 
