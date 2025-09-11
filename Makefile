@@ -22,11 +22,7 @@ help:
 	@echo "  docker-test - Run tests in Docker"
 	@echo "  setup-dev   - Set up development environment"
 	@echo "  migrate     - Run database migrations"
-	@echo "  upgrade-db  - Upgrade database to latest migration"
 	@echo "  serve       - Run development server"
-	@echo "  ci-install  - Install dependencies for CI"
-	@echo "  ci-test     - Run tests for CI"
-	@echo "  ci-quality  - Run quality checks for CI"
 
 # Installation
 install:
@@ -90,44 +86,24 @@ docker-down:
 # Development setup
 setup-dev: install
 	pre-commit install
-	python -m alembic upgrade head
+	@echo "Database tables will be created automatically when the app starts"
 
 # Database operations
 migrate:
-	python -m alembic upgrade head
+	@echo "Using direct table creation - no migrations needed"
+	python -c "from backend.app.database import engine, Base; Base.metadata.create_all(engine); print('Tables created successfully!')"
 
 migrate-create:
-	python -m alembic revision --autogenerate -m "$(MESSAGE)"
+	@echo "Direct table creation mode - no migration files needed"
 
 # Development server
 serve:
 	uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 
-# CI/CD helpers
-ci-install:
-	pip install --upgrade pip
-	pip install -r backend/requirements.txt
-	pip install pytest pytest-asyncio pytest-cov httpx
-
-ci-test: ci-install
-	python -m pytest tests/ -v --cov=backend --cov-report=xml
-
-ci-lint:
-	flake8 backend/ --count --select=E9,F63,F7,F82 --show-source --statistics
-
-ci-format-check:
-	black --check backend/
-	isort --check-only backend/
-
-# All quality checks
-check-all: format-check lint security test
-
-# Release helpers
-release-patch:
-	bump2version patch
-
-release-minor:
-	bump2version minor
-
-release-major:
-	bump2version major
+# Development helpers
+clean:
+	find . -type f -name "*.pyc" -delete
+	find . -type d -name "__pycache__" -delete
+	rm -rf .pytest_cache
+	rm -rf .coverage
+	rm -rf htmlcov

@@ -14,7 +14,6 @@ extend-exclude = '''
   | buck-out
   | build
   | dist
-  | alembic/versions
 )/
 '''
 

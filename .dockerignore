@@ -99,10 +99,6 @@ Dockerfile
 docker-compose*.yml
 .dockerignore
 
-# Alembic (include only necessary files)
-alembic.ini
-alembic/
-
 # Static uploads (don't include user uploads in image)
 static/uploads/
 static/images/products/

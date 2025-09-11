@@ -31,9 +31,9 @@ echo 📦 Installing dependencies...
 call venv\Scripts\activate
 pip install -r backend\requirements.txt
 
-echo 🗄️  Setting up database...
-REM Run migrations
-python -m alembic upgrade head
+echo 🗄️  Database setup...
+REM Database tables will be created automatically when the app starts
+echo ✅ Database will initialize automatically on first run
 
 echo 🚀 Setup complete!
 echo.
