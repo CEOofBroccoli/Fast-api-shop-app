@@ -313,67 +313,7 @@ SHOP_NAME=N-Market
 SHOP_EMAIL=your-shop@example.com
 ```
 
-> **🔒 Security Note:** Always use a strong, unique SECRET_KEY in production!
-
 </details>
-
-### 🎯 **Why This Architecture?**
-
-<div align="center">
-
-| **Traditional Complex Setup**    | **😫** | **N-Market Simplified**     | **😊** |
-| :------------------------------- | :----: | :-------------------------- | :----: |
-| Database migrations with Alembic |   ❌   | Direct table creation       |   ✅   |
-| Complex CI/CD pipelines          |   ❌   | Simple development workflow |   ✅   |
-| Redis caching setup              |   ❌   | Efficient without caching   |   ✅   |
-| Extensive testing infrastructure |   ❌   | Manual testing via Swagger  |   ✅   |
-| Configuration overhead           |   ❌   | One-file environment setup  |   ✅   |
-
-</div>
-
-**🎉 Result:** 80% less complexity, 100% of the functionality you need!
-
-## 🤝 Contributing
-
-We love contributions! Here's how you can help make N-Market even better:
-
-<details>
-<summary><strong>🎯 Ways to Contribute</strong></summary>
-
-- 🐛 **Report Bugs** - Found something broken? Let us know!
-- 💡 **Suggest Features** - Have ideas for improvements?
-- 🔧 **Submit Code** - Fix issues or add new features
-- � **Improve Documentation** - Help others understand the project
-- 🌍 **Translations** - Add support for more languages
-
-</details>
-
-<details>
-<summary><strong>🚀 Quick Contribution Guide</strong></summary>
-
-```bash
-# 1. Fork the repository on GitHub
-# 2. Clone your fork
-git clone https://github.com/yourusername/Fast-api-shop-app.git
-
-# 3. Create a feature branch
-git checkout -b feature/amazing-new-feature
-
-# 4. Make your changes and test them
-make serve  # Test locally
-
-# 5. Commit with a clear message
-git commit -m "Add amazing new feature that does X"
-
-# 6. Push and create a Pull Request
-git push origin feature/amazing-new-feature
-```
-
-</details>
-
-> **💡 Pro Tip:** Test your changes using the Swagger UI at `/docs` before submitting!
-
----
 
 ## �📄 License
 
@@ -396,8 +336,6 @@ See the [LICENSE](LICENSE) file for full details.
 _Where simplicity meets functionality_
 
 **Built with ❤️ by developers, for developers**
-
-[⭐ **Star us on GitHub**](https://github.com/yourusername/Fast-api-shop-app) • [🐛 **Report Issues**](https://github.com/yourusername/Fast-api-shop-app/issues) • [💬 **Join Discussions**](https://github.com/yourusername/Fast-api-shop-app/discussions)
 
 ---
 
