@@ -1,0 +1,26 @@
+@font-face {
+    font-family: "lalezar";
+    src: url("./assets/fonts/Lalezar-Regular.ttf");
+}
+@font-face {
+    font-family: "iransans";
+    src: url("./assets/fonts/IranianSans.ttf");
+}
+body{
+    font-family: lalezar;
+}
+.navbar{
+    background-color: #00B4D8;
+}
+.lalezar{
+    font-family: lalezar;
+}
+.iransans{
+    font-family: iransans;
+}
+.counter-box{
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 40px;
+}
