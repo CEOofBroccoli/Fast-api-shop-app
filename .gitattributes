@@ -1,0 +1,16 @@
+# Normalize line endings for consistent CI formatting
+*.py text eol=lf
+*.pyi text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
+*.txt text eol=lf
+
+# Keep images and binaries untouched
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary

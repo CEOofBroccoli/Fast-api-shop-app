@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Better Wide Logo Layouts</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f5f5f5;
+      }
+      .layout-example {
+        background: white;
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 8px;
+        border: 2px solid #28a745;
+      }
+      .layout-title {
+        font-weight: bold;
+        margin-bottom: 15px;
+        color: #333;
+      }
+
+      /* Option 1: Logo + Text Horizontal */
+      .logo-text-layout {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 8px;
+        max-width: 400px;
+      }
+      .logo-text-layout img {
+        width: 50px;
+        height: 50px;
+        border-radius: 6px;
+      }
+      .text-content h2 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .text-content p {
+        margin: 2px 0 0 0;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+
+      /* Option 2: Centered Square for Headers */
+      .header-layout {
+        text-align: center;
+        padding: 30px;
+        background: #2c3e50;
+        color: white;
+        border-radius: 8px;
+      }
+      .header-layout img {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+      }
+      .header-layout h1 {
+        margin: 0;
+        font-size: 28px;
+      }
+      .header-layout p {
+        margin: 5px 0 0 0;
+        opacity: 0.8;
+      }
+
+      /* Option 3: Icon Only */
+      .icon-only-layout {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        max-width: 200px;
+      }
+      .icon-only-layout img {
+        width: 40px;
+        height: 40px;
+      }
+
+      .recommendation {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        padding: 15px;
+        border-radius: 6px;
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎨 Better Wide Logo Layouts for N-Market</h1>
+
+    <div class="recommendation">
+      <h3>💡 Recommendation: Your square logo is actually perfect!</h3>
+      <p>
+        Instead of stretching it into a wide format, use these professional
+        layouts below.
+      </p>
+    </div>
+
+    <div class="layout-example">
+      <div class="layout-title">
+        ✅ Option 1: Logo + Text Layout (Best for headers)
+      </div>
+      <div class="logo-text-layout">
+        <img src="/static/images/logos/n-market-logo.png" alt="N-Market" />
+        <div class="text-content">
+          <h2>N-Market</h2>
+          <p>Your One-Stop Inventory Solution</p>
+        </div>
+      </div>
+      <p>
+        <strong>Use for:</strong> Website headers, email banners, letterheads
+      </p>
+    </div>
+
+    <div class="layout-example">
+      <div class="layout-title">
+        ✅ Option 2: Centered Square (Best for most cases)
+      </div>
+      <div class="header-layout">
+        <img src="/static/images/logos/n-market-logo.png" alt="N-Market" />
+        <h1>N-Market</h1>
+        <p>Your One-Stop Inventory Solution</p>
+      </div>
+      <p>
+        <strong>Use for:</strong> App headers, email headers, invoice headers
+      </p>
+    </div>
+
+    <div class="layout-example">
+      <div class="layout-title">
+        ✅ Option 3: Icon Only (For very compact spaces)
+      </div>
+      <div class="icon-only-layout">
+        <img src="/static/images/logos/small.png" alt="N-Market" />
+        <span style="font-weight: bold; color: #333">N-Market</span>
+      </div>
+      <p>
+        <strong>Use for:</strong> Navigation bars, compact headers, mobile apps
+      </p>
+    </div>
+
+    <div
+      style="
+        margin-top: 40px;
+        text-align: center;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+      "
+    >
+      <h2>🎯 Recommendation</h2>
+      <p>
+        Replace your wide logo with <strong>Option 1</strong> or
+        <strong>Option 2</strong> above.
+      </p>
+      <p>
+        These layouts look much more professional and maintain your brand
+        consistency.
+      </p>
+
+      <div
+        style="
+          margin-top: 20px;
+          padding: 15px;
+          background: #f8f9fa;
+          border-radius: 6px;
+        "
+      >
+        <h4>🔧 How to implement:</h4>
+        <ol style="text-align: left; max-width: 400px; margin: 0 auto">
+          <li>Update your email templates to use Option 2 (centered)</li>
+          <li>Use Option 1 for website headers</li>
+          <li>Keep using the square logo for most other cases</li>
+          <li>Consider Option 3 for very compact spaces</li>
+        </ol>
+      </div>
+    </div>
+  </body>
+</html>

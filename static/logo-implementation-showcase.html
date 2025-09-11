@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>N-Market Logo Implementation Showcase</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #f8f9fa;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .section {
+        background: white;
+        margin: 30px 0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+      .section-header {
+        background: #2c3e50;
+        color: white;
+        padding: 20px;
+      }
+      .section-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 5px;
+      }
+      .section-desc {
+        opacity: 0.9;
+        font-size: 16px;
+      }
+      .section-content {
+        padding: 30px;
+      }
+
+      .demo-item {
+        margin: 30px 0;
+        padding: 20px;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+      }
+      .demo-title {
+        font-weight: 600;
+        margin-bottom: 15px;
+        color: #495057;
+      }
+      .demo-use-case {
+        background: #e3f2fd;
+        padding: 10px 15px;
+        border-radius: 6px;
+        margin-bottom: 15px;
+        font-size: 14px;
+        color: #1976d2;
+      }
+
+      /* Email Header Demo */
+      .email-header-demo {
+        background-color: #2c3e50;
+        color: white;
+        padding: 30px 20px;
+        text-align: center;
+        border-radius: 8px;
+      }
+      .email-header-demo img {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 15px auto;
+        border-radius: 8px;
+        display: block;
+      }
+      .email-header-demo h1 {
+        font-size: 28px;
+        font-weight: bold;
+        margin: 0 0 8px 0;
+      }
+      .email-header-demo p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 16px;
+      }
+
+      /* Website Header Demo */
+      .website-header-demo {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 15px 30px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+      .logo-section img {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.2);
+      }
+      .brand-text h2 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      .brand-text p {
+        margin: 2px 0 0 0;
+        font-size: 14px;
+        opacity: 0.9;
+      }
+      .nav-demo {
+        display: flex;
+        gap: 15px;
+      }
+      .nav-demo a {
+        color: white;
+        text-decoration: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        background: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Compact Nav Demo */
+      .compact-nav-demo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      .compact-nav-demo img {
+        width: 40px;
+        height: 40px;
+        border-radius: 6px;
+      }
+      .compact-text {
+        font-weight: bold;
+        color: #333;
+        font-size: 18px;
+      }
+      .compact-desc {
+        font-size: 12px;
+        color: #666;
+      }
+
+      /* Invoice Header Demo */
+      .invoice-header-demo {
+        text-align: center;
+        padding: 40px 30px;
+        border: 2px solid #2c3e50;
+        border-radius: 8px;
+        background: #f8f9fa;
+      }
+      .invoice-header-demo img {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 20px auto;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: block;
+      }
+      .invoice-header-demo h1 {
+        font-size: 32px;
+        font-weight: bold;
+        color: #2c3e50;
+        margin: 0 0 8px 0;
+        letter-spacing: 1px;
+      }
+      .invoice-header-demo .tagline {
+        font-size: 16px;
+        color: #666;
+        margin: 0 0 20px 0;
+        font-style: italic;
+      }
+      .invoice-header-demo .company-info {
+        color: #555;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .success-badge {
+        background: #28a745;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div
+        style="
+          text-align: center;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 50px;
+          border-radius: 12px;
+          margin-bottom: 30px;
+        "
+      >
+        <h1 style="font-size: 36px; margin-bottom: 10px">
+          🎨 N-Market Logo Implementation
+        </h1>
+        <p style="font-size: 18px; opacity: 0.9">
+          Professional logo layouts for all use cases
+        </p>
+        <div class="success-badge">✅ All implementations ready!</div>
+      </div>
+
+      <!-- Email Headers -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">📧 Email Headers</div>
+          <div class="section-desc">
+            Centered square logo (120px) - Professional look
+          </div>
+        </div>
+        <div class="section-content">
+          <div class="demo-item">
+            <div class="demo-title">Email Template Header</div>
+            <div class="demo-use-case">
+              Use for: Welcome emails, order confirmations, newsletters
+            </div>
+            <div class="email-header-demo">
+              <img
+                src="/static/images/logos/n-market-logo.png"
+                alt="N-Market Logo"
+              />
+              <h1>N-Market</h1>
+              <p>Your One-Stop Inventory Solution</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Website Headers -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">🌐 Website Headers</div>
+          <div class="section-desc">
+            Logo + text horizontal layout - Modern design
+          </div>
+        </div>
+        <div class="section-content">
+          <div class="demo-item">
+            <div class="demo-title">Website Navigation Header</div>
+            <div class="demo-use-case">
+              Use for: Website headers, admin dashboard, main navigation
+            </div>
+            <div class="website-header-demo">
+              <div class="logo-section">
+                <img
+                  src="/static/images/logos/n-market-logo.png"
+                  alt="N-Market"
+                />
+                <div class="brand-text">
+                  <h2>N-Market</h2>
+                  <p>Your One-Stop Inventory Solution</p>
+                </div>
+              </div>
+              <div class="nav-demo">
+                <a href="#">Dashboard</a>
+                <a href="#">Products</a>
+                <a href="#">Orders</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compact Spaces -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">📱 Compact Spaces</div>
+          <div class="section-desc">
+            Small icon + "N-Market" text - Space efficient
+          </div>
+        </div>
+        <div class="section-content">
+          <div class="demo-item">
+            <div class="demo-title">Mobile Navigation / Compact Header</div>
+            <div class="demo-use-case">
+              Use for: Mobile apps, sidebar navigation, compact layouts
+            </div>
+            <div class="compact-nav-demo">
+              <img src="/static/images/logos/small.png" alt="N-Market" />
+              <div>
+                <div class="compact-text">N-Market</div>
+                <div class="compact-desc">Inventory System</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoice Headers -->
+      <div class="section">
+        <div class="section-header">
+          <div class="section-title">🧾 Invoice Headers</div>
+          <div class="section-desc">
+            Centered square logo with company info - Professional documents
+          </div>
+        </div>
+        <div class="section-content">
+          <div class="demo-item">
+            <div class="demo-title">Invoice / PDF Document Header</div>
+            <div class="demo-use-case">
+              Use for: Invoices, receipts, official documents, letterheads
+            </div>
+            <div class="invoice-header-demo">
+              <img
+                src="/static/images/logos/n-market-logo.png"
+                alt="N-Market Logo"
+              />
+              <h1>N-Market</h1>
+              <p class="tagline">Your One-Stop Inventory Solution</p>
+              <div class="company-info">
+                <div><strong>Email:</strong> modavari005@gmail.com</div>
+                <div><strong>Website:</strong> https://n-market.ir</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  </body>
+</html>

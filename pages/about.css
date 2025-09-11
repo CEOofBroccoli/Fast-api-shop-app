@@ -1,0 +1,45 @@
+@font-face {
+    font-family: "lalezar";
+    src: url("../assets/fonts/Lalezar-Regular.ttf");
+}
+
+@font-face {
+    font-family: "iransans";
+    src: url("../assets/fonts/IranianSans.ttf");
+}
+
+body {
+    font-family: lalezar;
+}
+
+.navbar {
+    background-color: #00B4D8;
+}
+
+.lalezar {
+    font-family: lalezar;
+}
+
+.iransans {
+    font-family: iransans;
+}
+footer {
+    background-color: #00B4D8;
+}
+
+.footer-links {
+    list-style-type: none;
+    padding: 0;
+}
+
+.footer-links li a{
+    text-decoration: none;
+    color: #000;
+}
+.card{
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    transition: all 0.7s;
+}
+.card:hover{
+    transform: scale(1.05);
+}
