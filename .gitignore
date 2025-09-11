@@ -134,3 +134,6 @@ dmypy.json
 *.tmp
 *.temp
 .cache/
+
+# Development/Testing scripts
+verify_simplified_project.py
