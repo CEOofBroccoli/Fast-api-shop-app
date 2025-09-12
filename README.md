@@ -326,19 +326,3 @@ See the [LICENSE](LICENSE) file for full details.
 </div>
 
 ---
-
-<div align="center">
-
-## 🎉 **Ready to Start Your Persian E-commerce Journey?**
-
-### **N-Market | فروشگاه ان-مارکت**
-
-_Where simplicity meets functionality_
-
-**Built with ❤️ by developers, for developers**
-
----
-
-_Made with FastAPI 🚀 • Designed for Persian Markets 🇮🇷 • Optimized for Developers 👨‍💻_
-
-</div>
