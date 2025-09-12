@@ -33,6 +33,30 @@ app.add_middleware(
 # Serve static files
 app.mount("/static", StaticFiles(directory="../pages"), name="static")
 
+@app.on_event("startup")
+async def startup_event():
+    Base.metadata.create_all(bind=engine)
+    db: Session = get_db().__next__()
+    
+    # Check if there are any products
+    existing_products = db.query(Product).count()
+    
+    if existing_products < 4:
+        # Add template products
+        template_products = [
+            ProductCreate(name="Template Product 1", sku="TP001", price=25.00, product_group="Templates", min_threshold=5),
+            ProductCreate(name="Template Product 2", sku="TP002", price=50.00, product_group="Templates", min_threshold=5),
+            ProductCreate(name="Template Product 3", sku="TP003", price=75.00, product_group="Templates", min_threshold=5),
+            ProductCreate(name="Template Product 4", sku="TP004", price=100.00, product_group="Templates", min_threshold=5),
+        ]
+        
+        for product_data in template_products:
+            db_product = Product(**product_data.model_dump())
+            db.add(db_product)
+        
+        db.commit()
+    db.close()
+
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
