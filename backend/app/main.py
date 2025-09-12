@@ -224,12 +224,10 @@ from backend.app.utils.rate_limiter import rate_limit
 
 
 @app.post("/signup", response_model=user)
-@rate_limit(endpoint_type="signup")
 def sign_up(user_data: user_create, db: Session = Depends(get_db)):
-    """User registration endpoint with rate limiting"""
+    """User registration endpoint with validation and security checks"""
     logger.setLevel(logging.DEBUG)
 
-    check_rate_limit(f"signup:{user_data.email}")
     try:
         logger.debug(f"Creating user with email: {user_data.email}")
         user_obj = create_user_secure(db=db, user=user_data)
@@ -244,10 +242,8 @@ def sign_up(user_data: user_create, db: Session = Depends(get_db)):
 
 
 @app.post("/login", response_model=token)
-@rate_limit(endpoint_type="auth")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    """User login endpoint with rate limiting and email verification"""
-    check_rate_limit(f"login:{form_data.username}")
+    """User login endpoint with email verification"""
     user_obj = authenticate_user(db, form_data.username, form_data.password)
     if not user_obj:
         raise HTTPException(

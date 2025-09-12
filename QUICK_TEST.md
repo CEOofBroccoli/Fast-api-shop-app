@@ -21,7 +21,11 @@ uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 **With Docker (Full Stack):** http://localhost:8000/docs
 **Development Mode:** http://localhost:8000/docs
 
-**Important:** Use the **port 8000** for Swagger UI access, not port 80.
+**Important:**
+
+- Use **port 8000** for Swagger UI access, not port 80
+- If you see a white page, restart the app container: `docker-compose restart app`
+- The Swagger UI loads external resources from CDN - this is normal and secure
 
 ## 3. Test Data Templates (Copy-Paste Ready)
 
