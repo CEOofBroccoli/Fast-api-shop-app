@@ -1,0 +1,25 @@
+@import url('style.css');
+
+.dashboard-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.metric-card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.metric-card h3 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.metric-card p {
+    font-size: 2em;
+    color: #007bff;
+}

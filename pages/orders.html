@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Orders</title>
+    <link rel="stylesheet" href="orders.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Orders</div>
+        <div class="nav-menu">
+            <a href="dashboard.html">Dashboard</a>
+            <button id="create-order-btn">Create Order</button>
+        </div>
+    </nav>
+
+    <div class="orders-container">
+        <div class="filters">
+            <input type="text" id="search" placeholder="Search orders...">
+            <select id="status-filter">
+                <option value="">All Statuses</option>
+                <option value="Draft">Draft</option>
+                <option value="Sent">Sent</option>
+                <option value="Received">Received</option>
+                <option value="Closed">Closed</option>
+            </select>
+        </div>
+
+        <div class="orders-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Product</th>
+                        <th>Quantity</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="orders-list">
+                    <!-- Orders will be dynamically added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination">
+            <button id="prev-page">Previous</button>
+            <span id="page-info">Page 1</span>
+            <button id="next-page">Next</button>
+        </div>
+    </div>
+
+    <script src="orders.js"></script>
+</body>
+</html>

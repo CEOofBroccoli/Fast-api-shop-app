@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Products</title>
+    <link rel="stylesheet" href="products.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Products</div>
+        <div class="nav-menu">
+            <a href="dashboard.html">Dashboard</a>
+            <button id="add-product-btn">Add Product</button>
+        </div>
+    </nav>
+
+    <div class="products-container">
+        <div class="filters">
+            <input type="text" id="search" placeholder="Search products...">
+            <select id="sort-by">
+                <option value="name_asc">Name (A-Z)</option>
+                <option value="name_desc">Name (Z-A)</option>
+                <option value="price_asc">Price (Low-High)</option>
+                <option value="price_desc">Price (High-Low)</option>
+            </select>
+            <label>
+                <input type="checkbox" id="low-stock-only">
+                Show Low Stock Only
+            </label>
+        </div>
+
+        <div class="products-grid" id="products-list">
+            <!-- Products will be dynamically added here -->
+        </div>
+
+        <div class="pagination">
+            <button id="prev-page">Previous</button>
+            <span id="page-info">Page 1</span>
+            <button id="next-page">Next</button>
+        </div>
+    </div>
+
+    <script src="products.js"></script>
+</body>
+</html>
