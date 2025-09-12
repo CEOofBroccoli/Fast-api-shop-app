@@ -2,31 +2,54 @@ from datetime import datetime
 from typing import List, Optional
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.orm import Session
+from logging import getLogger
 
-from backend.app.auth.jwt_handler import get_current_user, oauth2_scheme
+from typing import Tuple
+from fastapi import Request
+from backend.app.auth.jwt_handler import decode_token
 from backend.app.database import get_db
+from backend.app.main import get_authenticated_user_header
 from backend.app.models.product import Product
 from backend.app.models.sales_order import SalesOrder, SalesOrderItem, SalesOrderStatus
 from backend.app.models.user import User
 from backend.app.schemas.sales_order import SalesOrderCreate, SalesOrderUpdate, SalesOrderWithItems
 
 router = APIRouter(prefix="/sales-orders", tags=["Sales Orders"])
+logger = getLogger(__name__)
 
 
-def get_user_from_token(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    """Get user from auth token"""
-    payload = get_current_user(token)
-    username = payload.get("sub")
-    if not username:
+def authorize_user_from_header(authorization: Optional[str], db: Session) -> User:
+    """Authorize a user from an Authorization header value (Bearer token).
+
+    This helper is explicit and returns clear 401/404 messages instead of relying on OAuth2
+    dependency injection which can produce generic "Not authenticated" errors.
+    """
+    if not authorization or not isinstance(authorization, str) or not authorization.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authentication credentials",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail="Missing or invalid Authorization header. Use: Authorization: Bearer <token>",
         )
+    try:
+        token = authorization.split(" ", 1)[1].strip()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Authorization header format. Use: Authorization: Bearer <token>",
+        )
+
+    payload = decode_token(token)
+    if not payload or not payload.get("sub"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+    username = payload.get("sub")
     user = db.query(User).filter(User.username == username).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
+
+
+def get_current_user_from_header(authorization: Optional[str] = Header(None), db: Session = Depends(get_db)) -> User:
+    """FastAPI dependency to get current user from the Authorization header."""
+    return authorize_user_from_header(authorization, db)
 
 
 def validate_stock_availability(db: Session, product_id: int, quantity: int):
@@ -50,13 +73,18 @@ def validate_stock_availability(db: Session, product_id: int, quantity: int):
 
 @router.post("/", response_model=SalesOrderWithItems, status_code=status.HTTP_201_CREATED)
 async def create_sales_order(
+    request: Request,
     order: SalesOrderCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_authenticated_user_header)
 ):
     """Create a new sales order with stock validation."""
+    logger.debug("Received request to create sales order")
+    logger.debug(f"Current user: {current_user.username}, Role: {current_user.role}")
+
     # Verify user has permission to create orders
     if current_user.role not in ["admin", "manager", "staff", "customer"]:
+        logger.warning(f"User {current_user.username} does not have permission to create sales orders")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions to create sales orders"
@@ -64,6 +92,7 @@ async def create_sales_order(
 
     # Create sales order with customer details
     try:
+        logger.debug("Creating sales order in database")
         db_order = SalesOrder(
             customer_name=order.customer_name,
             customer_email=order.customer_email,
@@ -116,8 +145,9 @@ async def create_sales_order(
 
 @router.get("/", response_model=List[SalesOrderWithItems])
 async def list_sales_orders(
+    request: Request,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_authenticated_user_header),
     customer_email: Optional[str] = Query(None, description="Filter by customer email"),
     customer_name: Optional[str] = Query(None, description="Filter by customer name"),
     status_filter: Optional[SalesOrderStatus] = Query(None, description="Filter by status"),
@@ -136,8 +166,7 @@ async def list_sales_orders(
     #         detail="Missing authorization header",
     #     )
 
-    # token = authorization.split(" ")[1]  # Disabled for testing
-    user = get_user_from_token("", db)  # Pass empty token for testing
+    # Authentication provided via Depends(get_user_from_token)
 
     query = db.query(SalesOrder)
 
@@ -156,9 +185,10 @@ async def list_sales_orders(
 
 @router.get("/{order_id}", response_model=SalesOrderWithItems)
 async def get_sales_order(
+    request: Request,
     order_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_authenticated_user_header)
 ):
     """Get sales order details by ID."""
     order = db.query(SalesOrder).filter(SalesOrder.id == order_id).first()
@@ -175,10 +205,11 @@ async def get_sales_order(
 
 @router.put("/{order_id}", response_model=SalesOrderWithItems)
 async def update_sales_order(
+    request: Request,
     order_id: int,
     order_update: SalesOrderUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_authenticated_user_header)
 ):
     """Update sales order status and details."""
     # Only staff and above can update orders
@@ -214,9 +245,10 @@ async def update_sales_order(
 
 @router.delete("/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def cancel_sales_order(
+    request: Request,
     order_id: int,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_authenticated_user_header),
 ):
     """
     Cancel a sales order and restore inventory.

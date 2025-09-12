@@ -21,6 +21,7 @@ from backend.app.auth.auth_handler import (
 )
 from backend.app.auth.jwt_handler import create_access_token, get_current_user, verify_token
 from backend.app.config.shop_settings import get_shop_context, shop_settings
+from backend.app.config.api_description import FASTAPI_DESCRIPTION
 
 # Database imports
 from backend.app.database import Base, engine, get_db
@@ -35,9 +36,45 @@ from backend.app.models.user import User as UserModel
 from backend.app.utils.redis_cache import cache as redis_cache
 
 # Basic logging setup
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+# Custom auth helper
+async def get_authenticated_user_header(request: Request, db: Session = Depends(get_db)) -> UserModel:
+    """Extract bearer token from Authorization header, decode it, and return the ORM User.
+    
+    This avoids the generic OAuth2 "Not authenticated" message and returns clearer errors
+    when the header is missing or malformed.
+    """
+    logger.debug("Checking authorization header...")
+    logger.debug(f"Request headers: {dict(request.headers)}")
+    
+    authorization: str | None = request.headers.get("authorization") or request.headers.get("Authorization")
+    if not authorization or not isinstance(authorization, str) or not authorization.startswith("Bearer "):
+        logger.warning("Missing or invalid Authorization header")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid Authorization header. Use: Authorization: Bearer <token>",
+        )
+    try:
+        token = authorization.split(" ", 1)[1].strip()
+        logger.debug(f"Extracted token: {token[:10]}...")  # Log first 10 chars of token for debugging
+    except Exception as e:
+        logger.error(f"Error extracting token: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Authorization header format. Use: Authorization: Bearer <token>",
+        )
+    
+    payload = get_current_user(token)
+    if not payload or not payload.get("sub"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or expired token")
+    username = payload.get("sub")
+    user = db.query(UserModel).filter(UserModel.username == username).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
+
 logger = logging.getLogger(__name__)
 
 # Create FastAPI app with shop branding
@@ -46,38 +83,29 @@ app = FastAPI(
     description=f"""
     ## {shop_settings.shop_name}
     *{shop_settings.shop_description}*
-    
-    A comprehensive inventory and order management API for businesses.
-    
-    ## Features
-    
-    * **User Management**: Secure registration, authentication, and role-based access control
-    * **Product Management**: Inventory tracking, stock adjustments with audit trail
-    * **Supplier Management**: Supplier registration, performance tracking, and ratings
-    * **Sales Orders**: Complete order lifecycle management with status tracking
-    * **Purchase Orders**: Automated reordering and supplier management
-    * **Dashboard & Analytics**: Real-time business insights and performance metrics
-    * **Invoice Generation**: Professional PDF invoices and receipts
-    * **Reporting**: Generate insights and analytics on sales and inventory
-    
+
     ## Authentication
-    
+
     All endpoints except login and signup require JWT authentication using bearer tokens.
     Include an `Authorization: Bearer <token>` header with all requests.
-    
-    ## Role-Based Access
-    
+
+    ### Roles
+
     * **admin**: Full system access
     * **manager**: Product and order management, reporting
     * **staff**: Limited product management, order processing
     * **customer**: View products, manage own orders
-    
+
     ## Contact Information
-    
+
     * **Email**: {shop_settings.shop_email}
     * **Phone**: {shop_settings.shop_phone}
     * **Website**: {shop_settings.shop_website}
     """,
+    openapi_tags=[
+        {"name": "Authentication", "description": "Login and token operations"},
+        {"name": "Sales Orders", "description": "Sales order management"},
+    ],
     version="1.0.0",
     contact={
         "name": f"{shop_settings.shop_name} API Support",
@@ -251,16 +279,15 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             detail="Incorrect username/email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    # Email verification check disabled for testing
-    # if not getattr(user_obj, "is_verified", False):
-    #     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Email not verified")
     update_last_login(db, user_obj)
     access_token_expires = timedelta(minutes=30)
     access_token = create_access_token(
         data={"sub": user_obj.username, "uid": user_obj.id, "role": user_obj.role},
         expires_delta=access_token_expires,
     )
-    return {"access_token": access_token, "token_type": "bearer"}
+    response = {"access_token": access_token, "token_type": "bearer"}
+    logger.info(f"User {user_obj.username} logged in successfully")
+    return response
 
 
 @app.get("/users/me", response_model=user)
