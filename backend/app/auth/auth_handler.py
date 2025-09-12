@@ -46,9 +46,15 @@ def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
 
 
-def authenticate_user(db: Session, username: str, password: str):
-    """Authenticate user with username and password"""
-    user = get_user(db, username)
+def authenticate_user(db: Session, username_or_email: str, password: str):
+    """Authenticate user with username/email and password"""
+    # Try to find user by username first
+    user = get_user(db, username_or_email)
+    
+    # If not found by username, try by email
+    if not user:
+        user = get_user_by_email(db, username_or_email)
+    
     if not user:
         return False
     if not verify_password(password, user.hashed_password):

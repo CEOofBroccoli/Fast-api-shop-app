@@ -243,12 +243,12 @@ def sign_up(user_data: user_create, db: Session = Depends(get_db)):
 
 @app.post("/login", response_model=token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
-    """User login endpoint with email verification"""
+    """User login endpoint - use username OR email in the 'username' field"""
     user_obj = authenticate_user(db, form_data.username, form_data.password)
     if not user_obj:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
+            detail="Incorrect username/email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
     if not getattr(user_obj, "is_verified", False):

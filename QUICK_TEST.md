@@ -27,6 +27,23 @@ uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 - If you see a white page, restart the app container: `docker-compose restart app`
 - The Swagger UI loads external resources from CDN - this is normal and secure
 
+**For /signup endpoint:**
+
+1. Click on "POST /signup"
+2. Click "Try it out"
+3. You should see a JSON input box where you can paste the User Signup data below
+4. If you see args/kwargs instead, restart the container: `docker-compose restart app`
+
+**For /login endpoint:**
+
+1. Click on "POST /login"
+2. Click "Try it out"
+3. You'll see OAuth2 form fields - only fill these:
+   - **grant_type:** Leave as "password"
+   - **username:** Enter "testmanager" OR "testmanager@example.com"
+   - **password:** Enter "SecurePass123!"
+   - **client_id, client_secret, scope:** Leave empty (not required)
+
 ## 3. Test Data Templates (Copy-Paste Ready)
 
 ### User Signup
@@ -42,10 +59,21 @@ uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 
 ### Login Credentials
 
+**Option 1: Login with username**
+
 ```
 username: testmanager
 password: SecurePass123!
 ```
+
+**Option 2: Login with email (put email in username field)**
+
+```
+username: testmanager@example.com
+password: SecurePass123!
+```
+
+**Important:** In Swagger UI's login form, you can enter either your username OR email in the "username" field. Leave client_id, client_secret, and scope empty - they're optional OAuth2 fields not needed for this API.
 
 ### Product Creation (3 products)
 
