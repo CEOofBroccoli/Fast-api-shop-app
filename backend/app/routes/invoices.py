@@ -35,7 +35,10 @@ async def generate_invoice(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing or invalid authorization header",
         )
-    token = authorization.split(" ")[1]
+    try:
+        token = authorization.split(" ")[1]
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authorization header format")
     user_id = verify_token(token)
     user = db.query(User).filter(User.id == user_id).first()
 
@@ -240,7 +243,10 @@ async def generate_receipt(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing or invalid authorization header",
         )
-    token = authorization.split(" ")[1]
+    try:
+        token = authorization.split(" ")[1]
+    except Exception:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authorization header format")
     user_id = verify_token(token)
     user = db.query(User).filter(User.id == user_id).first()
 

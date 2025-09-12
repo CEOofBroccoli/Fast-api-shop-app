@@ -19,11 +19,10 @@ class SalesOrder(Base):
     __tablename__ = "sales_orders"
 
     id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
-    quantity = Column(Integer, nullable=False)
-    unit_price = Column(Float, nullable=False)  # Price at time of sale
-    total_amount = Column(Float, nullable=False)  # quantity * unit_price
+    customer_name = Column(String, nullable=False)
+    customer_email = Column(String, nullable=False)
+    customer_phone = Column(String, nullable=True)
+    total_amount = Column(Float, nullable=False, default=0)  # Sum of all items' total prices
     status = Column(Enum(SalesOrderStatus), default=SalesOrderStatus.PENDING)
     order_date = Column(DateTime(timezone=True), server_default=func.now())
     shipped_date = Column(DateTime(timezone=True), nullable=True)
@@ -33,8 +32,7 @@ class SalesOrder(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
     # Relationships
-    customer = relationship("User", backref="sales_orders")
-    product = relationship("Product", backref="sales_orders")
+    items = relationship("SalesOrderItem", back_populates="sales_order", cascade="all, delete-orphan")
 
 
 class SalesOrderItem(Base):
@@ -47,8 +45,8 @@ class SalesOrderItem(Base):
     product_id = Column(Integer, ForeignKey("products.id"), nullable=False)
     quantity = Column(Integer, nullable=False)
     unit_price = Column(Float, nullable=False)
-    total_price = Column(Float, nullable=False)
+    total = Column(Float, nullable=False)
 
     # Relationships
-    sales_order = relationship("SalesOrder", backref="order_items")
+    sales_order = relationship("SalesOrder", back_populates="items")
     product = relationship("Product")

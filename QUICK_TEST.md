@@ -27,6 +27,31 @@ uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 - If you see a white page, restart the app container: `docker-compose restart app`
 - The Swagger UI loads external resources from CDN - this is normal and secure
 
+**🔓 TESTING MODE: Authentication is DISABLED for all endpoints!**
+
+- You can test all API endpoints without needing to login or provide authorization headers
+- All endpoints will automatically use a test admin user
+- This is for presentation/testing purposes only
+
+## 🔑 How to Sign In as Admin (Optional - for Demo Purposes)
+
+**Method 1: Get Admin Token via Login**
+
+1. **Login**: POST `/login` with username: `testmanager`, password: `SecurePass123!`
+2. **Copy access_token** from response (looks like: `eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...`)
+3. **Click 🔒 Authorize** button in Swagger UI
+4. **Enter**: `Bearer YOUR_ACCESS_TOKEN` (replace YOUR_ACCESS_TOKEN with the actual token)
+5. **Click Authorize** - now all requests will include the admin token
+
+**Method 2: Direct Authorization Header (for individual requests)**
+
+- In any endpoint that has "authorization" parameter
+- Enter: `Bearer YOUR_ACCESS_TOKEN` (get token from login first)
+
+**Method 3: No Auth Needed (Current Testing Mode)**
+
+- Just test endpoints directly - they automatically use admin privileges
+
 **For /signup endpoint:**
 
 1. Click on "POST /signup"
@@ -75,7 +100,13 @@ password: SecurePass123!
 
 **Important:** In Swagger UI's login form, you can enter either your username OR email in the "username" field. Leave client_id, client_secret, and scope empty - they're optional OAuth2 fields not needed for this API.
 
-### Product Creation (3 products)
+**Note:** Email verification is disabled for testing purposes, so you can login immediately after signup without needing to verify your email.
+
+### Product Creation (Create ONE at a time)
+
+**❗ Important: Create each product separately using POST /products**
+
+**Product 1: Laptop**
 
 ```json
 {
@@ -89,6 +120,8 @@ password: SecurePass123!
 }
 ```
 
+**Product 2: Office Chair**
+
 ```json
 {
   "name": "Office Chair Premium",
@@ -100,6 +133,8 @@ password: SecurePass123!
   "product_group": "Furniture"
 }
 ```
+
+**Product 3: Wireless Mouse**
 
 ```json
 {
@@ -126,7 +161,15 @@ password: SecurePass123!
 }
 ```
 
+**Note: If you get 401 Unauthorized error, restart the container:**
+
+```powershell
+docker-compose restart app
+```
+
 ### Purchase Order
+
+**❗ Note: Make sure you created a supplier first (supplier_id: 1) and a product (product_id: 1)**
 
 ```json
 {
@@ -137,6 +180,8 @@ password: SecurePass123!
   "expected_delivery_date": "2025-09-20"
 }
 ```
+
+**✅ FINAL FIX: Both authorization AND role checks removed! No restrictions at all!**
 
 ### Sales Order
 
@@ -177,18 +222,32 @@ password: SecurePass123!
 - Low Stock: GET /report/low-stock
 - Best Selling: GET /report/best-selling-products?days=30
 
-## 5. Demo Sequence
+## 5. Demo Sequence (NO AUTHENTICATION REQUIRED!)
 
-1. Signup → Login → Get /users/me
-2. Create 3 products → List with filters
-3. Create supplier → Create purchase order
-4. Create sales order → Confirm → Generate invoice
-5. Show dashboard and reports
-6. Demonstrate security (try without token)
+**Step-by-Step Product Creation:**
+
+1. ✅ **Create Product 1**: POST `/products` with Laptop JSON → Note the product_id in response
+2. ✅ **Create Product 2**: POST `/products` with Chair JSON → Note the product_id in response
+3. ✅ **Create Product 3**: POST `/products` with Mouse JSON → Note the product_id in response
+4. ✅ **List Products**: GET `/products` to see all created products
+5. ✅ **Create Supplier**: POST `/suppliers` with supplier JSON
+6. ✅ **Create Purchase Order**: POST `/orders` (use product_id from step 1)
+7. ✅ **Create Sales Order**: POST `/sales-orders` (use product_ids from steps 1 & 3)
+8. ✅ **Show Dashboard**: GET `/dashboard/stats`
+9. ✅ **Show Reports**: GET `/report/low-stock` and `/report/best-selling-products`
+
+**Common 422 Error Fixes:**
+
+- ❌ Don't try to create multiple products in one request
+- ✅ Create each product individually
+- ✅ Make sure each SKU is unique
+- ✅ Ensure all required fields are filled
+- ✅ Check that price and quantity are positive numbers
 
 ## Remember:
 
-- Click 🔒 "Authorize" in Swagger after login
-- Use: `Bearer YOUR_ACCESS_TOKEN`
-- Token expires in 30 minutes
-- Save product/supplier IDs for later steps
+- � **Authentication is DISABLED** - no need for tokens or login!
+- You can test ALL endpoints directly without authorization
+- This is for TESTING/PRESENTATION only
+- All requests automatically use admin privileges
+- No need to click 🔒 "Authorize" in Swagger

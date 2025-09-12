@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 
 class InvoiceStatus(str, enum.Enum):
@@ -18,9 +18,25 @@ class PurchaseOrderBase(BaseModel):
     quantity: int
     unit_cost: float
     notes: Optional[str] = None
+    expected_delivery_date: Optional[datetime] = None  # Allow input during create
+
+    @field_validator("quantity")
+    @classmethod
+    def positive_quantity(cls, v: int):
+        if v <= 0:
+            raise ValueError("quantity must be positive")
+        return v
+
+    @field_validator("unit_cost")
+    @classmethod
+    def positive_unit_cost(cls, v: float):
+        if v <= 0:
+            raise ValueError("unit_cost must be positive")
+        return v
 
 
 class PurchaseOrderCreate(PurchaseOrderBase):
+    """Schema for creating a purchase order (expected_delivery_date optional)."""
     pass
 
 

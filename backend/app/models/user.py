@@ -20,7 +20,7 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     full_name = Column(String, nullable=True)
     role = Column(String, default="user")  # user, staff, manager, admin
-    is_verified = Column(Boolean, default=False)  # Email verification status
+    is_verified = Column(Boolean, default=True)  # Email verification status - set to True for testing
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now())

@@ -25,24 +25,23 @@ class SalesOrderItemCreate(SalesOrderItemBase):
 
 class SalesOrderItem(SalesOrderItemBase):
     id: int
-    total_price: float
+    unit_price: float
+    total: float
+    sales_order_id: int
 
     class Config:
         from_attributes = True
 
 
 class SalesOrderBase(BaseModel):
-    customer_id: int
-    product_id: int
-    quantity: int
-    unit_price: float
+    customer_name: str
+    customer_email: str
+    customer_phone: Optional[str] = None
     notes: Optional[str] = None
 
 
-class SalesOrderCreate(BaseModel):
-    customer_id: int
+class SalesOrderCreate(SalesOrderBase):
     items: List[SalesOrderItemCreate]
-    notes: Optional[str] = None
 
 
 class SalesOrderUpdate(BaseModel):
@@ -56,31 +55,16 @@ class SalesOrder(SalesOrderBase):
     id: int
     total_amount: float
     status: SalesOrderStatus
-    order_date: datetime
+    order_date: datetime = datetime.now()
     shipped_date: Optional[datetime] = None
     delivered_date: Optional[datetime] = None
-    created_at: datetime
-    updated_at: datetime
+    created_at: datetime = datetime.now()
+    updated_at: datetime = datetime.now()
+    items: List[SalesOrderItem] = []
 
     class Config:
         from_attributes = True
 
 
-class SalesOrderWithItems(BaseModel):
-    id: int
-    customer_id: int
-    product_id: int
-    quantity: int
-    unit_price: float
-    total_amount: float
-    status: SalesOrderStatus
-    order_date: datetime
-    shipped_date: Optional[datetime] = None
-    delivered_date: Optional[datetime] = None
-    notes: Optional[str] = None
-    created_at: datetime
-    updated_at: datetime
-    order_items: List[SalesOrderItem] = []
-
-    class Config:
-        from_attributes = True
+class SalesOrderWithItems(SalesOrder):
+    items: List[SalesOrderItem] = []
