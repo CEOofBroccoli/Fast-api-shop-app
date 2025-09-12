@@ -287,3 +287,8 @@ def test_db(db_session: Session = Depends(get_db)):
     except Exception as error:
         logger.error(f"Database connection test failed: {str(error)}")
         raise
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
